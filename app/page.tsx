@@ -12,33 +12,23 @@ interface Transaction {
   category: string;
 }
 
-const INITIAL_DATA: Transaction[] = [
-  { id: 1, date: '2026-06-01', desc: 'Salary', amount: 45000, type: 'Income', category: 'Salary' },
-];
-
 export default function FinSaveDashboard() {
   const [isMounted, setIsMounted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [activePage, setActivePage] = useState('DASHBOARD');
-  
-  // Initialize state with localStorage logic
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('finSaveData');
-      return saved ? JSON.parse(saved) : INITIAL_DATA;
-    }
-    return INITIAL_DATA;
-  });
-
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [formData, setFormData] = useState({ date: '2026-06-27', desc: '', amount: '', type: 'Income', category: 'Salary' });
 
-  // Sync with localStorage
   useEffect(() => {
-    localStorage.setItem('finSaveData', JSON.stringify(transactions));
-  }, [transactions]);
+    setIsMounted(true);
+    const saved = localStorage.getItem('finSaveData');
+    if (saved) setTransactions(JSON.parse(saved));
+  }, []);
 
-  useEffect(() => { setIsMounted(true); }, []);
+  useEffect(() => {
+    if (isMounted) localStorage.setItem('finSaveData', JSON.stringify(transactions));
+  }, [transactions, isMounted]);
 
   const stats = useMemo(() => {
     const balance = transactions.reduce((acc, t) => acc + t.amount, 0);
@@ -61,9 +51,7 @@ export default function FinSaveDashboard() {
     setFormData({ ...formData, desc: '', amount: '' });
   };
 
-  const deleteTransaction = (id: number) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
-  };
+  const deleteTransaction = (id: number) => setTransactions(prev => prev.filter(t => t.id !== id));
 
   const filtered = transactions.filter((t) => activePage === 'DASHBOARD' || activePage === 'HISTORY' ? true : (activePage === 'INCOME' ? t.type === 'Income' : t.type === 'Expense'));
 
@@ -79,45 +67,66 @@ export default function FinSaveDashboard() {
           {isSidebarOpen && <h1 className="text-xl font-bold tracking-tight">FinSave</h1>}
         </div>
         
-        <nav className="flex-1 space-y-2 px-3">
+        <nav className="flex-1 space-y-2 px-2">
           {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
             <button key={item.name} onClick={() => setActivePage(item.name)} 
-              className={`w-full flex items-center p-3 rounded-xl transition ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activePage === item.name ? 'bg-blue-600 text-white' : 'hover:bg-slate-500/10'}`}>
+              className={`w-full flex items-center p-3 rounded-xl transition ${isSidebarOpen ? 'justify-start px-4' : 'justify-center'} ${activePage === item.name ? 'bg-blue-600 text-white' : 'hover:bg-slate-500/10'}`}>
               <item.icon size={20} className="shrink-0" /> 
               {isSidebarOpen && <span className="ml-4 font-medium text-sm">{item.name}</span>}
             </button>
           ))}
         </nav>
 
-        <div className="px-3 space-y-2">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 rounded-xl hover:bg-slate-500/10 transition justify-center">
+        <div className="px-2 space-y-2">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center justify-center p-3 rounded-xl hover:bg-slate-500/10 transition">
                 <Menu size={20} />
             </button>
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full flex items-center p-3 rounded-xl hover:bg-slate-500/10 transition justify-center">
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full flex items-center justify-center p-3 rounded-xl hover:bg-slate-500/10 transition">
                 {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-8 overflow-y-auto">
         <h2 className="text-3xl font-extrabold text-blue-600 mb-8">{activePage === 'DASHBOARD' ? 'FinSave - DASHBOARD' : 'FinSave - Record List'}</h2>
         
         {activePage === 'DASHBOARD' ? (
           <div className="space-y-8">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
+                    <p className="text-slate-500 text-sm">Balance</p>
+                    <h3 className="text-2xl font-bold mt-1">₹{stats.balance.toLocaleString('en-IN')}</h3>
+                </div>
+                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
+                    <p className="text-slate-500 text-sm">Income</p>
+                    <h3 className="text-2xl font-bold mt-1 text-green-500">₹{stats.income.toLocaleString('en-IN')}</h3>
+                </div>
+                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
+                    <p className="text-slate-500 text-sm">Expenses</p>
+                    <h3 className="text-2xl font-bold mt-1 text-red-500">₹{stats.expense.toLocaleString('en-IN')}</h3>
+                </div>
+            </div>
+
+            {/* Graph */}
             <div className={`p-6 rounded-3xl border ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
                 <h3 className="font-bold mb-6">Activity Overview</h3>
                 <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={filtered.slice().reverse()}>
                     <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#1e293b' : '#e2e8f0'} vertical={false} />
-                    <XAxis dataKey="date" stroke="#3b82f6" />
-                    <YAxis stroke="#3b82f6" />
-                    <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff' }} />
+                    <XAxis dataKey="date" stroke="#3b82f6" tick={{fill: isDarkMode ? '#f8fafc' : '#334155'}} />
+                    <YAxis stroke="#3b82f6" tick={{fill: isDarkMode ? '#f8fafc' : '#334155'}} />
+                    <Tooltip 
+                        contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#3b82f6', borderRadius: '12px' }}
+                        formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Amount']}
+                        labelFormatter={(label) => `Date: ${label}`}
+                    />
                     <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 </BarChart>
                 </ResponsiveContainer>
             </div>
             
+            {/* Input Form */}
             <div className="p-6 rounded-2xl bg-[#0f172a] border border-slate-800 max-w-md">
                 <h3 className="font-bold mb-6 text-white flex items-center gap-2"><PlusCircle size={20}/> New Entry</h3>
                 <div className="space-y-4">
@@ -133,10 +142,7 @@ export default function FinSaveDashboard() {
           </div>
         ) : (
           <div className={`rounded-3xl border overflow-hidden ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
-            {filtered.length === 0 ? (
-                <p className="p-8 text-center text-slate-500">No records found.</p>
-            ) : (
-                <table className="w-full text-left">
+             <table className="w-full text-left">
                 <thead>
                     <tr className={isDarkMode ? 'bg-slate-900/50' : 'bg-slate-100'}>
                     <th className="p-4">Date</th>
@@ -162,7 +168,6 @@ export default function FinSaveDashboard() {
                     ))}
                 </tbody>
                 </table>
-            )}
           </div>
         )}
       </main>
