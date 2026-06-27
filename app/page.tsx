@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { LayoutDashboard, Wallet, TrendingUp, TrendingDown, History, PlusCircle, Menu, Sun, Moon, Inbox } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, TrendingDown, History, PlusCircle, Wallet } from 'lucide-react';
 
 const INITIAL_DATA = [
   { id: 1, date: '2026-06-01', desc: 'Monthly Salary', amount: 45000, type: 'Income', category: 'Salary' },
@@ -10,10 +10,9 @@ const INITIAL_DATA = [
 
 export default function FinSaveDashboard() {
   const [isMounted, setIsMounted] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activePage, setActivePage] = useState('DASHBOARD');
-  
-  // LAZY INITIALIZATION: Keeps your data from being wiped on refresh
+
+  // LAZY INITIALIZATION: This ensures the data loads instantly from memory
   const [transactions, setTransactions] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('finsave-data');
@@ -28,6 +27,7 @@ export default function FinSaveDashboard() {
     setIsMounted(true);
   }, []);
 
+  // Update storage whenever transactions change
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem('finsave-data', JSON.stringify(transactions));
@@ -54,42 +54,49 @@ export default function FinSaveDashboard() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100">
-      <aside className="w-64 border-r border-slate-800 p-6">
-        <h1 className="text-2xl font-black text-blue-500 mb-10">FinSave</h1>
+    <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
+      <aside className="w-64 border-r border-slate-800 p-6 flex flex-col">
+        <div className="flex items-center gap-2 mb-10"><Wallet className="text-blue-500" /> <h1 className="text-2xl font-black">FinSave</h1></div>
         <nav className="space-y-4">
-          <button onClick={() => setActivePage('DASHBOARD')} className="w-full text-left p-2 hover:text-blue-400">Dashboard</button>
+          <button onClick={() => setActivePage('DASHBOARD')} className="w-full flex items-center gap-3 p-3 bg-blue-600 rounded-xl"><LayoutDashboard size={20}/> DASHBOARD</button>
+          <button className="w-full flex items-center gap-3 p-3 text-slate-400"><TrendingUp size={20}/> INCOME</button>
+          <button className="w-full flex items-center gap-3 p-3 text-slate-400"><TrendingDown size={20}/> EXPENSES</button>
+          <button className="w-full flex items-center gap-3 p-3 text-slate-400"><History size={20}/> HISTORY</button>
         </nav>
       </aside>
 
       <main className="flex-1 p-8">
+        <h2 className="text-3xl font-bold mb-8">FinSave - {activePage}</h2>
         <div className="grid grid-cols-3 gap-6 mb-8">
           <div className="p-6 bg-slate-900 rounded-3xl border border-slate-800">
             <p className="text-sm opacity-70">Total Balance</p>
             <h3 className="text-3xl font-bold">₹{stats.total.toLocaleString()}</h3>
           </div>
           <div className="p-6 bg-slate-900 rounded-3xl border border-slate-800">
-            <p className="text-sm opacity-70">Income</p>
+            <p className="text-sm opacity-70">Total Income</p>
             <h3 className="text-3xl font-bold text-green-500">₹{stats.income.toLocaleString()}</h3>
           </div>
           <div className="p-6 bg-slate-900 rounded-3xl border border-slate-800">
-            <p className="text-sm opacity-70">Expenses</p>
+            <p className="text-sm opacity-70">Total Expenses</p>
             <h3 className="text-3xl font-bold text-red-500">₹{stats.expense.toLocaleString()}</h3>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
-          <div className="p-6 bg-slate-900 rounded-3xl border border-slate-800">
+        <div className="grid grid-cols-3 gap-6">
+          <div className="col-span-2 p-6 bg-slate-900 rounded-3xl border border-slate-800">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={transactions}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis /><Tooltip /><Bar dataKey="amount" fill="#3b82f6" /></BarChart>
+              <BarChart data={transactions}><CartesianGrid strokeDasharray="3 3" opacity={0.2} /><XAxis dataKey="date" /><YAxis /><Tooltip /><Bar dataKey="amount" fill="#3b82f6" /></BarChart>
             </ResponsiveContainer>
           </div>
-          
           <div className="p-6 bg-slate-900 rounded-3xl border border-slate-800">
-            <h3 className="text-lg font-semibold mb-4">New Entry</h3>
-            <input type="text" placeholder="Desc" className="w-full p-3 mb-2 bg-slate-950 rounded-lg" onChange={(e) => setFormData({...formData, desc: e.target.value})} value={formData.desc} />
-            <input type="number" placeholder="Amount" className="w-full p-3 mb-2 bg-slate-950 rounded-lg" onChange={(e) => setFormData({...formData, amount: e.target.value})} value={formData.amount} />
-            <button onClick={addTransaction} className="w-full bg-blue-600 p-3 rounded-lg font-bold">Save</button>
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><PlusCircle className="text-blue-500" /> New Entry</h3>
+            <input type="date" className="w-full p-3 mb-3 bg-slate-950 border border-slate-700 rounded-xl" onChange={(e) => setFormData({...formData, date: e.target.value})} value={formData.date} />
+            <input type="text" placeholder="Description" className="w-full p-3 mb-3 bg-slate-950 border border-slate-700 rounded-xl" onChange={(e) => setFormData({...formData, desc: e.target.value})} value={formData.desc} />
+            <input type="number" placeholder="Amount (₹)" className="w-full p-3 mb-3 bg-slate-950 border border-slate-700 rounded-xl" onChange={(e) => setFormData({...formData, amount: e.target.value})} value={formData.amount} />
+            <select className="w-full p-3 mb-4 bg-slate-950 border border-slate-700 rounded-xl" onChange={(e) => setFormData({...formData, type: e.target.value})} value={formData.type}>
+              <option>Income</option><option>Expense</option>
+            </select>
+            <button onClick={addTransaction} className="w-full bg-blue-600 p-3 rounded-xl font-bold hover:bg-blue-500 transition">Save Transaction</button>
           </div>
         </div>
       </main>
