@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { LayoutDashboard, Wallet, TrendingUp, TrendingDown, History, PlusCircle, Search, Trash2 } from 'lucide-react';
+import { LayoutDashboard, Wallet, TrendingUp, TrendingDown, History, PlusCircle, Search, Trash2, Sun, Moon, Menu } from 'lucide-react';
 
 interface Transaction {
   id: number;
@@ -12,31 +12,35 @@ interface Transaction {
   category: string;
 }
 
-const INITIAL_DATA: Transaction[] = [
-  { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 85000, type: 'Income', category: 'Salary' },
-  { id: 2, date: '2026-06-26', desc: 'Freelance Web Project', amount: 15000, type: 'Income', category: 'Freelance' },
-  { id: 3, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
-  { id: 4, date: '2026-06-28', desc: 'Electricity Bill', amount: -2100, type: 'Expense', category: 'Utilities' },
-];
+const INCOME_CATS = ['Salary', 'Business', 'Trading', 'Freelance'];
+const EXPENSE_CATS = ['Food', 'Entertainment', 'Utilities', 'Rent', 'Shopping'];
 
 export default function FinSaveDashboard() {
-  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_DATA);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<'All' | 'Income' | 'Expense'>('All');
-  const [formData, setFormData] = useState({ date: new Date().toISOString().split('T')[0], desc: '', amount: '', type: 'Income', category: 'Salary' });
+  const [isMounted, setIsMounted] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [activePage, setActivePage] = useState('DASHBOARD');
+  const [transactions, setTransactions] = useState<Transaction[]>([
+    { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 85000, type: 'Income', category: 'Salary' },
+    { id: 3, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
+  ]);
 
-  // Compute Stats
+  const [formData, setFormData] = useState({ date: new Date().toISOString().split('T')[0], desc: '', amount: '', type: 'Income' as 'Income' | 'Expense', category: 'Salary' });
+
+  useEffect(() => { setIsMounted(true); }, []);
+
   const stats = useMemo(() => {
-    const balance = transactions.reduce((acc, t) => acc + t.amount, 0);
-    const income = transactions.filter((t) => t.amount > 0).reduce((acc, t) => acc + t.amount, 0);
-    const expense = transactions.filter((t) => t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0);
-    return { balance, income, expense };
+    const bal = transactions.reduce((acc, t) => acc + t.amount, 0);
+    const inc = transactions.filter(t => t.amount > 0).reduce((acc, t) => acc + t.amount, 0);
+    const exp = transactions.filter(t => t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0);
+    return { bal, inc, exp };
   }, [transactions]);
 
-  // Filtering & Searching Logic
-  const filteredTransactions = transactions.filter(t => 
-    (filterType === 'All' || t.type === filterType) &&
-    t.desc.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredData = transactions.filter(t => 
+    activePage === 'DASHBOARD' ? true : 
+    activePage === 'HISTORY' ? true : 
+    activePage === 'INCOME' ? t.type === 'Income' : 
+    t.type === 'Expense'
   );
 
   const addTransaction = () => {
@@ -46,95 +50,100 @@ export default function FinSaveDashboard() {
       date: formData.date,
       desc: formData.desc,
       category: formData.category,
-      type: formData.type as 'Income' | 'Expense',
+      type: formData.type,
       amount: formData.type === 'Expense' ? -Math.abs(Number(formData.amount)) : Math.abs(Number(formData.amount))
     }, ...prev]);
-    setFormData({ ...formData, desc: '', amount: '' });
+    setFormData({...formData, desc: '', amount: ''});
   };
 
+  if (!isMounted) return null;
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 font-sans">
-      {/* Header Section */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-extrabold text-cyan-500 mb-6 tracking-tight">FinSave - DASHBOARD</h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[ {label: 'Balance', val: stats.balance, color: 'text-white'}, {label: 'Total Income', val: stats.income, color: 'text-cyan-500'}, {label: 'Total Expenses', val: stats.expense, color: 'text-red-500'} ].map((s, i) => (
-                <div key={i} className="p-6 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500/30 transition-all">
-                    <p className="text-slate-400 text-sm font-medium">{s.label}</p>
-                    <h3 className={`text-2xl font-bold mt-1 ${s.color}`}>₹{s.val.toLocaleString('en-IN')}</h3>
-                </div>
-            ))}
+    <div className={`flex min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
+      
+      {/* Sidebar */}
+      <aside className={`border-r p-4 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
+        <div className={`flex items-center gap-3 mb-10 ${!isSidebarOpen && 'justify-center'}`}>
+            <Wallet className="text-cyan-500" />
+            {isSidebarOpen && <h1 className="font-bold text-xl">FinSave</h1>}
         </div>
-      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Col: Main Chart & Records */}
-        <div className="lg:col-span-2 space-y-8">
-            <div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
-                <h3 className="text-sm font-bold text-slate-400 mb-4 uppercase">Activity Overview</h3>
-                <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={transactions.slice().reverse()}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                        <XAxis dataKey="date" stroke="#475569" fontSize={12}/>
-                        <YAxis stroke="#475569" fontSize={12}/>
-                        <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#06b6d4', borderRadius: '8px' }} />
-                        <Bar dataKey="amount" fill="#06b6d4" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
+        <nav className="flex-1 space-y-2">
+            {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSE', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
+                <button key={item.name} onClick={() => setActivePage(item.name)} 
+                    className={`w-full flex items-center p-3 rounded-lg transition ${activePage === item.name ? 'bg-cyan-500 text-white' : 'hover:bg-slate-500/10'} ${!isSidebarOpen && 'justify-center'}`}>
+                    <item.icon size={20} />
+                    {isSidebarOpen && <span className="ml-3 font-medium">{item.name}</span>}
+                </button>
+            ))}
+        </nav>
 
-            {/* Controls & Records List */}
-            <div>
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">RECORDS LIST</h3>
-                    <div className="flex gap-2">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-2.5 text-slate-500" size={16}/>
-                            <input type="text" placeholder="Search..." className="pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-cyan-500" onChange={(e) => setSearchTerm(e.target.value)} />
-                        </div>
-                        <select className="bg-slate-900 border border-slate-800 rounded-lg px-4 text-sm focus:outline-none focus:border-cyan-500" onChange={(e) => setFilterType(e.target.value as any)}>
-                            <option value="All">All Types</option>
-                            <option value="Income">Income</option>
-                            <option value="Expense">Expense</option>
-                        </select>
+        <div className="space-y-2">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-lg justify-center"><Menu size={20}/></button>
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-lg justify-center">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-8 overflow-y-auto">
+        <h2 className="text-3xl font-bold mb-8 text-cyan-500">{activePage}</h2>
+
+        {activePage === 'DASHBOARD' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {[ {title: 'Balance', val: stats.bal}, {title: 'Income', val: stats.inc}, {title: 'Expense', val: stats.exp} ].map((s, i) => (
+                    <div key={i} className={`p-6 rounded-xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                        <p className="text-sm opacity-60">{s.title}</p>
+                        <h3 className="text-2xl font-bold mt-1">₹{s.val.toLocaleString()}</h3>
                     </div>
-                </div>
-                <div className="space-y-3">
-                    {filteredTransactions.map((t) => (
-                        <div key={t.id} className="flex justify-between items-center p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition">
-                            <div>
-                                <p className="font-bold text-slate-200">{t.desc}</p>
-                                <p className="text-xs text-slate-500">{t.date} • {t.category}</p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className={`font-bold ${t.amount > 0 ? 'text-cyan-500' : 'text-red-500'}`}>
-                                    {t.amount > 0 ? '+' : ''}₹{t.amount.toLocaleString('en-IN')}
-                                </span>
-                                <button onClick={() => setTransactions(transactions.filter(tr => tr.id !== t.id))} className="text-slate-600 hover:text-red-500"><Trash2 size={16}/></button>
-                            </div>
+                ))}
+            </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+                {activePage === 'DASHBOARD' && (
+                    <div className={`p-6 rounded-xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={transactions.slice().reverse()}>
+                                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
+                                <XAxis dataKey="date" />
+                                <YAxis />
+                                <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff' }} />
+                                <Bar dataKey="amount" fill="#06b6d4" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
+                
+                <div className={`p-6 rounded-xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                    <h3 className="font-bold mb-4">Transactions</h3>
+                    {filteredData.map(t => (
+                        <div key={t.id} className="flex justify-between items-center py-3 border-b border-slate-800/50">
+                            <div><p className="font-bold">{t.desc}</p><p className="text-xs opacity-50">{t.date} • {t.category}</p></div>
+                            <span className={`font-bold ${t.amount > 0 ? 'text-cyan-500' : 'text-red-500'}`}>{t.amount > 0 ? '+' : ''}₹{t.amount.toLocaleString()}</span>
                         </div>
                     ))}
                 </div>
             </div>
-        </div>
 
-        {/* Right Col: Input Section */}
-        <div className="lg:col-span-1">
-            <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 sticky top-6">
-                <h3 className="font-bold mb-6 flex items-center gap-2 text-lg"><PlusCircle size={20} className="text-cyan-500"/> New Entry</h3>
+            {/* Input Form */}
+            <div className={`p-6 rounded-xl border h-fit ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                <h3 className="font-bold mb-6 flex items-center gap-2"><PlusCircle className="text-cyan-500"/> New Entry</h3>
                 <div className="space-y-4">
-                    <input type="date" className="w-full p-3 bg-slate-950 border border-slate-800 rounded-lg text-sm" onChange={(e) => setFormData({...formData, date: e.target.value})} value={formData.date}/>
-                    <input type="text" placeholder="Description" className="w-full p-3 bg-slate-950 border border-slate-800 rounded-lg text-sm" onChange={(e) => setFormData({...formData, desc: e.target.value})} value={formData.desc}/>
-                    <input type="number" placeholder="Amount (₹)" className="w-full p-3 bg-slate-950 border border-slate-800 rounded-lg text-sm" onChange={(e) => setFormData({...formData, amount: e.target.value})} value={formData.amount}/>
-                    <select className="w-full p-3 bg-slate-950 border border-slate-800 rounded-lg text-sm" onChange={(e) => setFormData({...formData, type: e.target.value as any})}>
+                    <input type="text" placeholder="Description" className="w-full p-3 bg-transparent border rounded-lg" onChange={e => setFormData({...formData, desc: e.target.value})} />
+                    <input type="number" placeholder="Amount" className="w-full p-3 bg-transparent border rounded-lg" onChange={e => setFormData({...formData, amount: e.target.value})} />
+                    <select className="w-full p-3 bg-transparent border rounded-lg" onChange={e => setFormData({...formData, type: e.target.value as any, category: e.target.value === 'Income' ? 'Salary' : 'Food'})}>
                         <option value="Income">Income</option>
                         <option value="Expense">Expense</option>
                     </select>
-                    <button onClick={addTransaction} className="w-full bg-cyan-500 text-slate-950 p-3 rounded-lg font-bold hover:bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition">Save Transaction</button>
+                    <select className="w-full p-3 bg-transparent border rounded-lg" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+                        {(formData.type === 'Income' ? INCOME_CATS : EXPENSE_CATS).map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <button onClick={addTransaction} className="w-full bg-cyan-500 text-white p-3 rounded-lg font-bold">Save</button>
                 </div>
             </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
