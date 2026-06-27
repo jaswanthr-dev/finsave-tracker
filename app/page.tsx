@@ -10,7 +10,6 @@ const INITIAL_DATA = [
   { id: 4, date: '2026-06-15', desc: 'Fuel', amount: -1200, type: 'Expense', category: 'Transport' },
 ];
 
-// STRICT CATEGORY LISTS
 const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Trading', 'Investments', 'Business', 'Rental Income', 'Other'];
 const EXPENSE_CATEGORIES = ['Food', 'Housing', 'Transport', 'Shopping', 'Entertainment', 'Health', 'Education', 'Utilities', 'General'];
 
@@ -19,15 +18,30 @@ export default function FinSaveDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activePage, setActivePage] = useState('DASHBOARD');
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-  const [transactions, setTransactions] = useState(INITIAL_DATA);
+  
+  // FIX 1: Initialize with an empty array
+  const [transactions, setTransactions] = useState([]);
   const [formData, setFormData] = useState({ date: '', desc: '', amount: '', type: 'Income', category: 'Salary' });
 
+  // FIX 2: Load data from localStorage on startup
   useEffect(() => {
+    const savedData = localStorage.getItem('finsave-data');
+    if (savedData) {
+      setTransactions(JSON.parse(savedData));
+    } else {
+      setTransactions(INITIAL_DATA);
+    }
     setIsMounted(true);
     setFormData(prev => ({ ...prev, date: new Date().toISOString().split('T')[0] }));
   }, []);
 
-  // Determine categories based on current type selection
+  // FIX 3: Save data to localStorage whenever transactions change
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('finsave-data', JSON.stringify(transactions));
+    }
+  }, [transactions, isMounted]);
+
   const currentCategories = formData.type === 'Income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
   const stats = useMemo(() => {
@@ -110,14 +124,13 @@ export default function FinSaveDashboard() {
           </div>
         )}
 
-        {/* Dynamic Header */}
         {(activePage === 'INCOME' || activePage === 'EXPENSES') && (
            <div className={`p-6 rounded-3xl border ${cardClass} mb-8 ${activePage === 'INCOME' ? 'border-green-500/20' : 'border-red-500/20'}`}>
              <p className="text-sm mb-2 opacity-70">Total {activePage}</p>
              <h3 className={`text-3xl font-bold ${activePage === 'INCOME' ? 'text-green-500' : 'text-red-500'}`}>
-                ₹{activePage === 'INCOME' ? stats.income.toLocaleString() : stats.expense.toLocaleString()}
+               ₹{activePage === 'INCOME' ? stats.income.toLocaleString() : stats.expense.toLocaleString()}
              </h3>
-          </div>
+         </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -151,7 +164,6 @@ export default function FinSaveDashboard() {
               <input type="text" placeholder="Description" className={`w-full p-4 border rounded-xl ${inputClass}`} onChange={(e) => setFormData({...formData, desc: e.target.value})} value={formData.desc} />
               <input type="number" placeholder="Amount (₹)" className={`w-full p-4 border rounded-xl ${inputClass}`} onChange={(e) => setFormData({...formData, amount: e.target.value})} value={formData.amount} />
               
-              {/* FIXED SELECT LOGIC */}
               <select 
                 className={`w-full p-4 border rounded-xl ${inputClass}`} 
                 onChange={(e) => {
