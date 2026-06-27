@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { LayoutDashboard, Wallet, TrendingUp, TrendingDown, History, PlusCircle, Menu, Sun, Moon, Trash2, Search } from 'lucide-react';
+import { LayoutDashboard, Wallet, TrendingUp, TrendingDown, History, PlusCircle, Menu, Sun, Moon, Trash2 } from 'lucide-react';
 
 interface Transaction {
   id: number;
@@ -13,8 +13,8 @@ interface Transaction {
 }
 
 const CATEGORIES = {
-  Income: ['Salary', 'Business', 'Trading', 'Freelance'],
-  Expense: ['Food', 'Entertainment', 'Utilities', 'Rent', 'Shopping']
+  Income: ['Salary', 'Business', 'Trading', 'Freelance', 'Dividends', 'Bonus'],
+  Expense: ['Food', 'Entertainment', 'Utilities', 'Rent', 'Shopping', 'Transport', 'Healthcare', 'Education']
 };
 
 export default function FinSaveDashboard() {
@@ -25,7 +25,7 @@ export default function FinSaveDashboard() {
   
   const [transactions, setTransactions] = useState<Transaction[]>([
     { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 85000, type: 'Income', category: 'Salary' },
-    { id: 3, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
+    { id: 2, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
   ]);
 
   const [formData, setFormData] = useState({ 
@@ -38,11 +38,6 @@ export default function FinSaveDashboard() {
 
   useEffect(() => { setIsMounted(true); }, []);
 
-  // Update category when type changes
-  const handleTypeChange = (type: 'Income' | 'Expense') => {
-    setFormData({ ...formData, type, category: CATEGORIES[type][0] });
-  };
-
   const stats = useMemo(() => {
     const bal = transactions.reduce((acc, t) => acc + t.amount, 0);
     const inc = transactions.filter(t => t.amount > 0).reduce((acc, t) => acc + t.amount, 0);
@@ -53,7 +48,7 @@ export default function FinSaveDashboard() {
   const filteredData = transactions.filter(t => 
     activePage === 'DASHBOARD' || activePage === 'HISTORY' ? true : 
     activePage === 'INCOME' ? t.type === 'Income' : 
-    t.type === 'Expense'
+    activePage === 'EXPENSES' ? t.type === 'Expense' : true
   );
 
   const addTransaction = () => {
@@ -92,26 +87,22 @@ export default function FinSaveDashboard() {
         </nav>
 
         <div className="px-3 space-y-2">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center">
-                <Menu size={20}/>
-            </button>
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center">
-                {isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}
-            </button>
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center"><Menu size={20}/></button>
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 p-8 overflow-y-auto">
-        <h2 className="text-3xl font-extrabold mb-8 text-cyan-500">{activePage}</h2>
+        <h2 className="text-3xl font-extrabold mb-8 text-cyan-500">FinSave - {activePage}</h2>
 
         {activePage === 'DASHBOARD' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {[ {title: 'Balance', val: stats.bal, color: 'text-white'}, {title: 'Total Income', val: stats.inc, color: 'text-cyan-500'}, {title: 'Total Expenses', val: stats.exp, color: 'text-red-500'} ].map((s, i) => (
-                    <div key={i} className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                {[ {title: 'Balance', val: stats.bal, color: 'text-white', page: 'DASHBOARD'}, {title: 'INCOME', val: stats.inc, color: 'text-emerald-500', page: 'INCOME'}, {title: 'EXPENSES', val: stats.exp, color: 'text-red-500', page: 'EXPENSES'} ].map((s, i) => (
+                    <button key={i} onClick={() => setActivePage(s.page)} className={`p-6 rounded-2xl border text-left hover:border-cyan-500/50 transition-all ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                         <p className="text-sm opacity-60">{s.title}</p>
                         <h3 className={`text-2xl font-bold mt-1 ${s.color}`}>₹{s.val.toLocaleString('en-IN')}</h3>
-                    </div>
+                    </button>
                 ))}
             </div>
         )}
@@ -139,7 +130,7 @@ export default function FinSaveDashboard() {
                         {filteredData.map(t => (
                             <div key={t.id} className="flex justify-between items-center py-3 border-b border-slate-800/50">
                                 <div><p className="font-bold">{t.desc}</p><p className="text-xs opacity-50">{t.date} • {t.category}</p></div>
-                                <span className={`font-bold ${t.amount > 0 ? 'text-cyan-500' : 'text-red-500'}`}>
+                                <span className={`font-bold ${t.amount > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                                     {t.amount > 0 ? '+' : ''}₹{t.amount.toLocaleString('en-IN')}
                                 </span>
                             </div>
@@ -148,13 +139,12 @@ export default function FinSaveDashboard() {
                 </div>
             </div>
 
-            {/* Input Form */}
             <div className={`p-6 rounded-2xl border h-fit ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                 <h3 className="font-bold mb-6 flex items-center gap-2"><PlusCircle className="text-cyan-500"/> New Entry</h3>
                 <div className="space-y-4">
                     <input type="text" placeholder="Description" className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl" onChange={e => setFormData({...formData, desc: e.target.value})} value={formData.desc}/>
                     <input type="number" placeholder="Amount (₹)" className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl" onChange={e => setFormData({...formData, amount: e.target.value})} value={formData.amount}/>
-                    <select className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl" onChange={e => handleTypeChange(e.target.value as any)}>
+                    <select className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl" onChange={e => setFormData({...formData, type: e.target.value as any, category: CATEGORIES[e.target.value as 'Income' | 'Expense'][0]})}>
                         <option value="Income">Income</option>
                         <option value="Expense">Expense</option>
                     </select>
