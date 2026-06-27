@@ -15,9 +15,9 @@ interface Transaction {
 const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Trading', 'Investments', 'Business', 'Other'];
 const EXPENSE_CATEGORIES = ['Food', 'Housing', 'Transport', 'Shopping', 'Entertainment', 'Health', 'Utilities', 'General'];
 
-// Example data updated to show Indian comma formatting (e.g., 1,25,000)
+// Example data added for Income and Expense sections
 const INITIAL_DATA: Transaction[] = [
-  { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 125000, type: 'Income', category: 'Salary' },
+  { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 85000, type: 'Income', category: 'Salary' },
   { id: 2, date: '2026-06-26', desc: 'Freelance Web Project', amount: 15000, type: 'Income', category: 'Freelance' },
   { id: 3, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
   { id: 4, date: '2026-06-28', desc: 'Electricity Bill', amount: -2100, type: 'Expense', category: 'Utilities' }
@@ -29,6 +29,7 @@ export default function FinSaveDashboard() {
   const [activePage, setActivePage] = useState<string>('DASHBOARD');
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   
+  // State saves until reload as requested
   const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_DATA);
   const [formData, setFormData] = useState({ date: new Date().toISOString().split('T')[0], desc: '', amount: '', type: 'Income', category: 'Salary' });
 
@@ -81,4 +82,80 @@ export default function FinSaveDashboard() {
 
         <div className="mt-auto space-y-4 pt-6 border-t border-slate-800/50">
           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 text-slate-400 hover:text-cyan-400">
-            <Menu size={20} className="shrink-0" /> {isSidebarOpen && <span
+            <Menu size={20} className="shrink-0" /> {isSidebarOpen && <span className="ml-4">Collapse</span>}
+          </button>
+          <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="w-full flex items-center p-3 text-slate-400 hover:text-cyan-400">
+            {theme === 'dark' ? <Sun size={20} className="shrink-0"/> : <Moon size={20} className="shrink-0"/>} {isSidebarOpen && <span className="ml-4">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 p-8 overflow-y-auto">
+        <h2 className="text-4xl font-extrabold text-cyan-500 mb-8 drop-shadow-[0_0_4px_rgba(34,211,238,0.2)]">FinSave - {activePage}</h2>
+        
+        {/* Dynamic Header Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {activePage === 'DASHBOARD' && (
+            <>
+              <div className={`p-6 rounded-3xl border ${cardClass}`}><p className="opacity-70">Balance</p><h3 className="text-3xl font-bold">₹{stats.balance.toLocaleString()}</h3></div>
+              <div className={`p-6 rounded-3xl border ${cardClass}`}><p className="opacity-70 text-green-500">Total Income</p><h3 className="text-3xl font-bold text-green-500">₹{stats.income.toLocaleString()}</h3></div>
+              <div className={`p-6 rounded-3xl border ${cardClass}`}><p className="opacity-70 text-red-500">Total Expenses</p><h3 className="text-3xl font-bold text-red-500">₹{stats.expense.toLocaleString()}</h3></div>
+            </>
+          )}
+          {activePage === 'INCOME' && (
+            <div className={`p-6 rounded-3xl border col-span-3 ${cardClass}`}><p className="opacity-70 text-green-500">Total Income</p><h3 className="text-5xl font-bold text-green-500">₹{stats.income.toLocaleString()}</h3></div>
+          )}
+          {activePage === 'EXPENSES' && (
+            <div className={`p-6 rounded-3xl border col-span-3 ${cardClass}`}><p className="opacity-70 text-red-500">Total Expenses</p><h3 className="text-5xl font-bold text-red-500">₹{stats.expense.toLocaleString()}</h3></div>
+          )}
+          {activePage === 'HISTORY' && (
+            <div className={`p-6 rounded-3xl border col-span-3 ${cardClass}`}><p className="opacity-70">Transaction History</p><h3 className="text-3xl font-bold">{transactions.length} Total Records</h3></div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-3 gap-6">
+          <div className={`col-span-2 p-6 rounded-3xl border ${cardClass}`}>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={filtered}><CartesianGrid strokeDasharray="3 3" opacity={0.2} /><XAxis dataKey="date"/><YAxis/><Tooltip/><Bar dataKey="amount" fill="#22d3ee" radius={[4, 4, 0, 0]}/></BarChart>
+            </ResponsiveContainer>
+
+            {/* List of Examples / Transactions Below Chart */}
+            <div className="mt-8 space-y-3">
+               <h3 className="text-sm font-bold opacity-50 uppercase tracking-wider mb-4">Records List</h3>
+               {filtered.map(t => (
+                  <div key={t.id} className="flex justify-between items-center p-4 rounded-xl border border-slate-700/30 hover:bg-slate-800/20 transition">
+                     <div>
+                        <p className="font-bold">{t.desc}</p>
+                        <p className="text-xs opacity-60">{t.date} • {t.category}</p>
+                     </div>
+                     <p className={`font-bold ${t.amount > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {t.amount > 0 ? '+' : ''}₹{Math.abs(t.amount).toLocaleString()}
+                     </p>
+                  </div>
+               ))}
+               {filtered.length === 0 && <p className="opacity-50 text-center py-4">No records found.</p>}
+            </div>
+          </div>
+
+          <div className={`p-6 rounded-3xl border h-fit sticky top-8 ${cardClass}`}>
+            <h3 className="font-bold mb-4 flex items-center gap-2"><PlusCircle className="text-cyan-500"/> New Entry</h3>
+            <input type="date" className="w-full p-3 mb-3 bg-transparent border border-slate-700/50 rounded-lg" onChange={(e) => setFormData({...formData, date: e.target.value})} value={formData.date}/>
+            
+            {/* Input placeholder updated to 'Description' */}
+            <input type="text" placeholder="Description" className="w-full p-3 mb-3 bg-transparent border border-slate-700/50 rounded-lg focus:border-cyan-500 outline-none" onChange={(e) => setFormData({...formData, desc: e.target.value})} value={formData.desc}/>
+            
+            <input type="number" placeholder="Amount (₹)" className="w-full p-3 mb-3 bg-transparent border border-slate-700/50 rounded-lg focus:border-cyan-500 outline-none" onChange={(e) => setFormData({...formData, amount: e.target.value})} value={formData.amount}/>
+            <select className="w-full p-3 mb-3 bg-transparent border border-slate-700/50 rounded-lg" onChange={(e) => setFormData({...formData, type: e.target.value, category: e.target.value === 'Income' ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0]})}>
+              <option value="Income">Income</option><option value="Expense">Expense</option>
+            </select>
+            <select className="w-full p-3 mb-5 bg-transparent border border-slate-700/50 rounded-lg" onChange={(e) => setFormData({...formData, category: e.target.value})} value={formData.category}>
+              {(formData.type === 'Income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <button onClick={addTransaction} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white p-3 rounded-lg font-bold transition">Save Transaction</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
