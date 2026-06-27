@@ -53,7 +53,7 @@ export default function FinSaveDashboard() {
   return (
     <div className={`flex min-h-screen font-sans transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
-      {/* Sidebar */}
+      {/* Sidebar: Flexbox logic centered */}
       <aside className={`border-r transition-all duration-300 flex flex-col py-6 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
         <div className={`flex items-center mb-10 h-10 ${isSidebarOpen ? 'px-6 gap-3' : 'justify-center'}`}>
           <Wallet size={28} className="shrink-0 text-blue-600" />
@@ -90,14 +90,10 @@ export default function FinSaveDashboard() {
                 <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={filtered.slice().reverse()}>
                     <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#1e293b' : '#e2e8f0'} vertical={false} />
+                    {/* Fixed Graph Ticks to be White in Dark Mode */}
                     <XAxis dataKey="date" stroke="#3b82f6" tick={{fill: isDarkMode ? '#f8fafc' : '#334155'}} />
                     <YAxis stroke="#3b82f6" tick={{fill: isDarkMode ? '#f8fafc' : '#334155'}} />
-                    {/* Tooltip with "Amount" and "Date" labels */}
-                    <Tooltip 
-                        contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#3b82f6', borderRadius: '12px' }}
-                        formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Amount']}
-                        labelFormatter={(label) => `Date: ${label}`}
-                    />
+                    <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#3b82f6' }} />
                     <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 </BarChart>
                 </ResponsiveContainer>
