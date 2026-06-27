@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { LayoutDashboard, Wallet, TrendingUp, TrendingDown, History, PlusCircle, Menu, Sun, Moon } from 'lucide-react';
 
+// Define the shape of our data to clear TypeScript errors
 interface Transaction {
   id: number;
   date: string;
@@ -35,9 +36,9 @@ export default function FinSaveDashboard() {
   useEffect(() => { if (isMounted) localStorage.setItem('finSaveData', JSON.stringify(transactions)); }, [transactions, isMounted]);
 
   const stats = useMemo(() => {
-    const total = transactions.reduce((acc, t) => acc + t.amount, 0);
-    const income = transactions.filter(t => t.amount > 0).reduce((acc, t) => acc + t.amount, 0);
-    const expense = transactions.filter(t => t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0);
+    const total = transactions.reduce((acc: number, t: Transaction) => acc + t.amount, 0);
+    const income = transactions.filter((t: Transaction) => t.amount > 0).reduce((acc, t) => acc + t.amount, 0);
+    const expense = transactions.filter((t: Transaction) => t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0);
     return { total, income, expense };
   }, [transactions]);
 
@@ -78,27 +79,15 @@ export default function FinSaveDashboard() {
           <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="w-full flex items-center p-3 text-slate-400">{theme === 'dark' ? <Sun size={20}/> : <Moon size={20}/>} {isSidebarOpen && <span className="ml-4">{theme === 'dark' ? 'Light' : 'Dark'}</span>}</button>
         </div>
       </aside>
-
       <main className="flex-1 p-8">
         <h2 className="text-4xl font-extrabold text-blue-500 mb-8 drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">FinSave - {activePage}</h2>
-        
-        {/* Dynamic Header Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {activePage === 'DASHBOARD' && (
-            <>
-              <div className={`p-6 rounded-3xl border ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}><p className="opacity-70">Balance</p><h3 className="text-3xl font-bold">₹{stats.total.toLocaleString()}</h3></div>
-              <div className={`p-6 rounded-3xl border ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}><p className="opacity-70 text-green-500">Total Income</p><h3 className="text-3xl font-bold text-green-500">₹{stats.income.toLocaleString()}</h3></div>
-              <div className={`p-6 rounded-3xl border ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}><p className="opacity-70 text-red-500">Total Expenses</p><h3 className="text-3xl font-bold text-red-500">₹{stats.expense.toLocaleString()}</h3></div>
-            </>
-          )}
-          {activePage === 'INCOME' && (
-            <div className={`p-6 rounded-3xl border col-span-3 ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}><p className="opacity-70 text-green-500">Total Income</p><h3 className="text-5xl font-bold text-green-500">₹{stats.income.toLocaleString()}</h3></div>
-          )}
-          {activePage === 'EXPENSES' && (
-            <div className={`p-6 rounded-3xl border col-span-3 ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}><p className="opacity-70 text-red-500">Total Expenses</p><h3 className="text-5xl font-bold text-red-500">₹{stats.expense.toLocaleString()}</h3></div>
-          )}
+        <div className="grid grid-cols-3 gap-6 mb-8">
+          {[{l:'Balance', v:stats.total, c:''}, {l:'Income', v:stats.income, c:'text-green-500'}, {l:'Expenses', v:stats.expense, c:'text-red-500'}].map(s => (
+            <div key={s.l} className={`p-6 rounded-3xl border ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}>
+              <p className="opacity-70">{s.l}</p><h3 className={`text-3xl font-bold ${s.c}`}>₹{s.v.toLocaleString()}</h3>
+            </div>
+          ))}
         </div>
-
         <div className="grid grid-cols-3 gap-6">
           <div className={`col-span-2 p-6 rounded-3xl border ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}>
             <ResponsiveContainer width="100%" height={300}>
