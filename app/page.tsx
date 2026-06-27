@@ -8,34 +8,24 @@ interface Transaction {
   date: string;
   desc: string;
   amount: number;
-  type: string;
+  type: 'Income' | 'Expense';
   category: string;
 }
 
 const INITIAL_DATA: Transaction[] = [
-  { id: 1, date: '2026-06-01', desc: 'Salary', amount: 45000, type: 'Income', category: 'Salary' },
+  { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 85000, type: 'Income', category: 'Salary' },
+  { id: 2, date: '2026-06-26', desc: 'Freelance Web Project', amount: 15000, type: 'Income', category: 'Freelance' },
+  { id: 3, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
+  { id: 4, date: '2026-06-28', desc: 'Electricity Bill', amount: -2100, type: 'Expense', category: 'Utilities' },
 ];
 
 export default function FinSaveDashboard() {
   const [isMounted, setIsMounted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [activePage, setActivePage] = useState('DASHBOARD');
-  
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [formData, setFormData] = useState({ date: new Date().toISOString().split('T')[0], desc: '', amount: '', type: 'Income', category: 'Salary' });
+  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_DATA);
+  const [formData, setFormData] = useState({ date: '2026-06-27', desc: '', amount: '', type: 'Income', category: 'Salary' });
 
-  // Load from local storage
-  useEffect(() => {
-    setIsMounted(true);
-    const saved = localStorage.getItem('finSaveData');
-    setTransactions(saved ? JSON.parse(saved) : INITIAL_DATA);
-  }, []);
-
-  // Save to local storage
-  useEffect(() => {
-    if (isMounted) localStorage.setItem('finSaveData', JSON.stringify(transactions));
-  }, [transactions, isMounted]);
+  useEffect(() => { setIsMounted(true); }, []);
 
   const stats = useMemo(() => {
     const balance = transactions.reduce((acc, t) => acc + t.amount, 0);
@@ -51,127 +41,103 @@ export default function FinSaveDashboard() {
       date: formData.date,
       desc: formData.desc,
       category: formData.category,
-      type: formData.type,
+      type: formData.type as 'Income' | 'Expense',
       amount: formData.type === 'Expense' ? -Math.abs(Number(formData.amount)) : Math.abs(Number(formData.amount))
     };
     setTransactions((prev) => [newTx, ...prev]);
     setFormData({ ...formData, desc: '', amount: '' });
   };
 
-  const deleteTransaction = (id: number) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
-  };
-
-  const filtered = transactions.filter((t) => activePage === 'DASHBOARD' || activePage === 'HISTORY' ? true : (activePage === 'INCOME' ? t.type === 'Income' : t.type === 'Expense'));
+  const deleteTransaction = (id: number) => setTransactions(prev => prev.filter(t => t.id !== id));
 
   if (!isMounted) return null;
 
   return (
-    <div className={`flex min-h-screen font-sans transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      
-      {/* Sidebar - Fix: Added flex items-center and justify-center logic for alignment */}
-      <aside className={`border-r transition-all duration-300 flex flex-col py-6 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
+    <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
+      {/* Sidebar */}
+      <aside className={`border-r border-slate-800 transition-all duration-300 flex flex-col py-6 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
         <div className={`flex items-center mb-10 h-10 ${isSidebarOpen ? 'px-6 gap-3' : 'justify-center'}`}>
-          <Wallet size={28} className="shrink-0 text-blue-600" />
+          <Wallet size={28} className="shrink-0 text-cyan-500" />
           {isSidebarOpen && <h1 className="text-xl font-bold tracking-tight">FinSave</h1>}
         </div>
-        
         <nav className="flex-1 space-y-2 px-3">
-          {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
-            <button key={item.name} onClick={() => setActivePage(item.name)} 
-              className={`w-full flex items-center p-3 rounded-xl transition ${isSidebarOpen ? 'justify-start' : 'justify-center'} ${activePage === item.name ? 'bg-blue-600 text-white' : 'hover:bg-slate-500/10'}`}>
-              <item.icon size={20} className="shrink-0" /> 
-              {isSidebarOpen && <span className="ml-4 font-medium text-sm">{item.name}</span>}
+            <button className="w-full flex items-center p-3 rounded-xl bg-slate-900/50 text-cyan-500">
+                <LayoutDashboard size={20} />
+                {isSidebarOpen && <span className="ml-4 font-medium text-sm">Dashboard</span>}
             </button>
-          ))}
         </nav>
-
-        <div className="px-3 space-y-2">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 rounded-xl hover:bg-slate-500/10 transition justify-center">
-                <Menu size={20} />
-            </button>
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full flex items-center p-3 rounded-xl hover:bg-slate-500/10 transition justify-center">
-                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-        </div>
       </aside>
 
-      <main className="flex-1 p-8 overflow-y-auto">
-        <h2 className="text-3xl font-extrabold text-blue-600 mb-8">{activePage}</h2>
+      {/* Main Content */}
+      <main className="flex-1 p-8">
+        <h2 className="text-3xl font-extrabold text-cyan-500 mb-8">FinSave - DASHBOARD</h2>
         
-        {activePage === 'DASHBOARD' ? (
-          <div className="space-y-8">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[ {title: 'Balance', val: stats.balance}, {title: 'Income', val: stats.income}, {title: 'Expense', val: stats.expense} ].map((s, i) => (
-                    <div key={i} className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <p className="text-slate-500 text-sm font-medium">{s.title}</p>
-                        <h3 className={`text-2xl font-bold mt-1 ${s.title === 'Income' ? 'text-green-500' : s.title === 'Expense' ? 'text-red-500' : ''}`}>₹{s.val.toLocaleString('en-IN')}</h3>
-                    </div>
-                ))}
+        {/* Top Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                <p className="text-slate-400 text-sm">Balance</p>
+                <h3 className="text-2xl font-bold mt-1">₹{stats.balance.toLocaleString('en-IN')}</h3>
             </div>
+            <div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                <p className="text-slate-400 text-sm">Total Income</p>
+                <h3 className="text-2xl font-bold mt-1 text-cyan-500">₹{stats.income.toLocaleString('en-IN')}</h3>
+            </div>
+            <div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                <p className="text-slate-400 text-sm">Total Expenses</p>
+                <h3 className="text-2xl font-bold mt-1 text-red-500">₹{stats.expense.toLocaleString('en-IN')}</h3>
+            </div>
+        </div>
 
-            {/* Graph */}
-            <div className={`p-6 rounded-3xl border ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
-                <h3 className="font-bold mb-6">Activity Overview</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={filtered.slice().reverse()}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#1e293b' : '#e2e8f0'} vertical={false} />
-                    <XAxis dataKey="date" stroke="#94a3b8" tick={{fill: isDarkMode ? '#94a3b8' : '#64748b'}} />
-                    <YAxis stroke="#94a3b8" tick={{fill: isDarkMode ? '#94a3b8' : '#64748b'}} />
-                    <Tooltip 
-                        contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#3b82f6', borderRadius: '12px' }}
-                        formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN')}`, 'Amount']}
-                        labelFormatter={(label) => `Date: ${label}`}
-                    />
-                    <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-                </ResponsiveContainer>
-            </div>
-            
-            <div className="p-6 rounded-2xl bg-[#0f172a] border border-slate-800 max-w-md">
-                <h3 className="font-bold mb-6 text-white flex items-center gap-2"><PlusCircle size={20}/> New Entry</h3>
-                <div className="space-y-4">
-                    <input type="text" placeholder="Description" className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-200" onChange={(e) => setFormData({...formData, desc: e.target.value})} value={formData.desc}/>
-                    <input type="number" placeholder="Amount (₹)" className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-200" onChange={(e) => setFormData({...formData, amount: e.target.value})} value={formData.amount}/>
-                    <select className="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl text-slate-200" onChange={(e) => setFormData({...formData, type: e.target.value})}>
-                        <option value="Income">Income</option>
-                        <option value="Expense">Expense</option>
-                    </select>
-                    <button onClick={addTransaction} className="w-full bg-blue-600 text-white p-3 rounded-xl font-bold hover:bg-blue-700">Save</button>
+        <div className="grid grid-cols-3 gap-8">
+            {/* Left: Graph & Records */}
+            <div className="col-span-2 space-y-8">
+                <div className="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                    <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={transactions.slice().reverse()}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                            <XAxis dataKey="date" stroke="#475569" />
+                            <YAxis stroke="#475569" />
+                            <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#06b6d4' }} />
+                            <Bar dataKey="amount" fill="#06b6d4" radius={[2, 2, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+
+                <div>
+                    <h3 className="text-slate-400 uppercase text-xs font-bold mb-4 tracking-wider">RECORDS LIST</h3>
+                    <div className="space-y-3">
+                        {transactions.map((t) => (
+                            <div key={t.id} className="flex justify-between items-center p-4 rounded-xl bg-slate-900 border border-slate-800">
+                                <div>
+                                    <p className="font-bold">{t.desc}</p>
+                                    <p className="text-xs text-slate-500">{t.date} • {t.category}</p>
+                                </div>
+                                <span className={`font-bold ${t.amount > 0 ? 'text-cyan-500' : 'text-red-500'}`}>
+                                    {t.amount > 0 ? '+' : ''}₹{t.amount.toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
-          </div>
-        ) : (
-          <div className={`rounded-3xl border overflow-hidden ${isDarkMode ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-slate-200'}`}>
-            <table className="w-full text-left">
-                <thead>
-                    <tr className={isDarkMode ? 'bg-slate-900/50' : 'bg-slate-100'}>
-                        <th className="p-4">Date</th>
-                        <th className="p-4">Description</th>
-                        <th className="p-4">Amount</th>
-                        <th className="p-4 text-center">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filtered.map((t) => (
-                    <tr key={t.id} className="border-t border-slate-800/50 hover:bg-slate-800/30">
-                        <td className="p-4">{t.date}</td>
-                        <td className="p-4">{t.desc}</td>
-                        <td className={`p-4 font-bold ${t.amount > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {t.amount.toLocaleString('en-IN')}
-                        </td>
-                        <td className="p-4 text-center">
-                            <button onClick={() => deleteTransaction(t.id)} className="text-slate-500 hover:text-red-500 transition">
-                                <Trash2 size={18} />
-                            </button>
-                        </td>
-                    </tr>
-                    ))}
-                </tbody>
-            </table>
-          </div>
-        )}
+
+            {/* Right: New Entry */}
+            <div className="col-span-1">
+                <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 sticky top-8">
+                    <h3 className="font-bold mb-6 flex items-center gap-2"><PlusCircle size={20} className="text-cyan-500"/> New Entry</h3>
+                    <div className="space-y-4">
+                        <input type="date" className="w-full p-3 bg-slate-950 border border-slate-800 rounded-lg" onChange={(e) => setFormData({...formData, date: e.target.value})} />
+                        <input type="text" placeholder="Description" className="w-full p-3 bg-slate-950 border border-slate-800 rounded-lg" onChange={(e) => setFormData({...formData, desc: e.target.value})} />
+                        <input type="number" placeholder="Amount (₹)" className="w-full p-3 bg-slate-950 border border-slate-800 rounded-lg" onChange={(e) => setFormData({...formData, amount: e.target.value})} />
+                        <select className="w-full p-3 bg-slate-950 border border-slate-800 rounded-lg" onChange={(e) => setFormData({...formData, type: e.target.value as any})}>
+                            <option value="Income">Income</option>
+                            <option value="Expense">Expense</option>
+                        </select>
+                        <button onClick={addTransaction} className="w-full bg-cyan-500 text-slate-950 p-3 rounded-lg font-bold hover:bg-cyan-400">Save Transaction</button>
+                    </div>
+                </div>
+            </div>
+        </div>
       </main>
     </div>
   );
