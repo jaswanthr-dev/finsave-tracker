@@ -1,5 +1,7 @@
 # FinSave - Financial Intelligence Dashboard
 
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=vercel)](finsave-tracker.vercel.app)
+
 A professional, high-performance financial tracking application designed for data-driven personal budget management.
 
 ## 📑 Table of Contents
