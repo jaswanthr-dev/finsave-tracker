@@ -39,14 +39,16 @@ export default function FinSaveDashboard() {
     } else {
       setTransactions([
         { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 85000, type: 'Income', category: 'Salary' },
-        { id: 2, date: '2026-06-25', desc: 'Freelance Design', amount: 12000, type: 'Income', category: 'Freelance' },
-        { id: 3, date: '2026-06-26', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
-        { id: 4, date: '2026-06-26', desc: 'Netflix Subscription', amount: -800, type: 'Expense', category: 'Entertainment' },
-        { id: 5, date: '2026-06-27', desc: 'Internet Bill', amount: -1200, type: 'Expense', category: 'Utilities' },
-        { id: 6, date: '2026-06-27', desc: 'Client Consulting', amount: 25000, type: 'Income', category: 'Business' },
-        { id: 7, date: '2026-06-28', desc: 'Fuel Expenses', amount: -2500, type: 'Expense', category: 'Transport' },
-        { id: 8, date: '2026-06-28', desc: 'Stock Dividend', amount: 3500, type: 'Income', category: 'Dividends' },
-        { id: 9, date: '2026-06-28', desc: 'Shopping', amount: -5000, type: 'Expense', category: 'Shopping' },
+        { id: 2, date: '2026-06-25', desc: 'Freelance UI Design', amount: 15000, type: 'Income', category: 'Freelance' },
+        { id: 3, date: '2026-06-26', desc: 'Weekly Supermarket', amount: -4800, type: 'Expense', category: 'Food' },
+        { id: 4, date: '2026-06-26', desc: 'Netflix & Spotify', amount: -1200, type: 'Expense', category: 'Entertainment' },
+        { id: 5, date: '2026-06-27', desc: 'Broadband Bill', amount: -1500, type: 'Expense', category: 'Utilities' },
+        { id: 6, date: '2026-06-27', desc: 'Consulting Project', amount: 30000, type: 'Income', category: 'Business' },
+        { id: 7, date: '2026-06-28', desc: 'Petrol/Fuel', amount: -3000, type: 'Expense', category: 'Transport' },
+        { id: 8, date: '2026-06-28', desc: 'Stock Dividends', amount: 4500, type: 'Income', category: 'Dividends' },
+        { id: 9, date: '2026-06-28', desc: 'New Sneakers', amount: -6500, type: 'Expense', category: 'Shopping' },
+        { id: 10, date: '2026-06-28', desc: 'Gym Membership', amount: -2000, type: 'Expense', category: 'Healthcare' },
+        { id: 11, date: '2026-06-28', desc: 'Online Course', amount: -3500, type: 'Expense', category: 'Education' },
       ]);
     }
     const savedTheme = localStorage.getItem('isDarkMode');
@@ -103,14 +105,14 @@ export default function FinSaveDashboard() {
 
   return (
     <div className={`flex min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      {/* Sidebar now has fixed height and overflow-hidden to prevent jumpiness */}
-      <aside className={`border-r transition-all duration-300 flex flex-col h-screen sticky top-0 py-6 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
-        <div className={`flex items-center gap-3 mb-10 px-6 ${!isSidebarOpen && 'justify-center px-0'}`}>
+      <aside className={`border-r transition-all duration-300 h-screen sticky top-0 grid grid-rows-[auto_1fr_auto] py-6 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
+        
+        <div className={`flex items-center gap-3 px-6 ${!isSidebarOpen && 'justify-center px-0'}`}>
             <Wallet className="text-cyan-500 shrink-0" size={28} />
             {isSidebarOpen && <h1 className="font-bold text-xl tracking-tight">FinSave</h1>}
         </div>
         
-        <nav className="flex-1 space-y-2 px-3 overflow-y-auto">
+        <nav className="space-y-2 px-3 mt-10">
             {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
                 <button key={item.name} onClick={() => setActivePage(item.name)} 
                     className={`w-full flex items-center p-3 rounded-xl transition ${activePage === item.name ? 'bg-cyan-500 text-white' : 'hover:bg-slate-500/10'} ${!isSidebarOpen && 'justify-center'}`}>
@@ -120,14 +122,11 @@ export default function FinSaveDashboard() {
             ))}
         </nav>
 
-        <div className="px-3 space-y-4 pt-6 border-t border-slate-500/20 shrink-0">
+        <div className="px-3 space-y-4 pt-6 border-t border-slate-500/20">
             <button 
                 onClick={() => { 
                     const confirmed = window.confirm("Are you sure you want to delete all transaction records? This action cannot be undone.");
-                    if (confirmed) {
-                        localStorage.removeItem('finSaveData');
-                        window.location.reload();
-                    }
+                    if (confirmed) { localStorage.removeItem('finSaveData'); window.location.reload(); }
                 }} 
                 className={`w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition ${!isSidebarOpen ? 'justify-center' : 'justify-start'}`}
             >
