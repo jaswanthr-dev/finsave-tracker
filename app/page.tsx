@@ -40,7 +40,14 @@ export default function FinSaveDashboard() {
     } else {
       setTransactions([
         { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 85000, type: 'Income', category: 'Salary' },
-        { id: 3, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
+        { id: 2, date: '2026-06-25', desc: 'Freelance Design', amount: 12000, type: 'Income', category: 'Freelance' },
+        { id: 3, date: '2026-06-26', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
+        { id: 4, date: '2026-06-26', desc: 'Netflix Subscription', amount: -800, type: 'Expense', category: 'Entertainment' },
+        { id: 5, date: '2026-06-27', desc: 'Internet Bill', amount: -1200, type: 'Expense', category: 'Utilities' },
+        { id: 6, date: '2026-06-27', desc: 'Client Consulting', amount: 25000, type: 'Income', category: 'Business' },
+        { id: 7, date: '2026-06-28', desc: 'Fuel Expenses', amount: -2500, type: 'Expense', category: 'Transport' },
+        { id: 8, date: '2026-06-28', desc: 'Stock Dividend', amount: 3500, type: 'Income', category: 'Dividends' },
+        { id: 9, date: '2026-06-28', desc: 'Shopping', amount: -5000, type: 'Expense', category: 'Shopping' },
       ]);
     }
     
