@@ -44,7 +44,7 @@ export default function FinSaveDashboard() {
       ]);
     }
     
-    // Load Theme Preference
+    // Load Theme
     const savedTheme = localStorage.getItem('isDarkMode');
     if (savedTheme !== null) {
       setIsDarkMode(JSON.parse(savedTheme));
@@ -123,9 +123,12 @@ export default function FinSaveDashboard() {
             ))}
         </nav>
         <div className="px-3 space-y-4">
-            <button onClick={() => { localStorage.removeItem('finSaveData'); window.location.reload(); }} className={`w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition ${!isSidebarOpen ? 'justify-center' : ''}`}>
-                <Trash2 size={20} />
-                {isSidebarOpen && <span className="ml-4 font-medium text-sm">Clear All Data</span>}
+            <button 
+                onClick={() => { localStorage.removeItem('finSaveData'); window.location.reload(); }} 
+                className={`w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition ${!isSidebarOpen ? 'justify-center' : 'justify-start'}`}
+            >
+                <Trash2 size={20} className="shrink-0" />
+                {isSidebarOpen && <span className="ml-4 font-medium text-sm whitespace-nowrap">Clear All Data</span>}
             </button>
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center"><Menu size={20}/></button>
             <button onClick={toggleTheme} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
