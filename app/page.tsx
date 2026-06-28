@@ -195,7 +195,8 @@ export default function FinSaveDashboard() {
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className={`p-8 rounded-3xl w-full max-w-sm border shadow-2xl ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
-            <h3 className="text-xl font-bold mb-4">Clear all data?</h3>
+            <h3 className="text-xl font-bold mb-2">Clear all data?</h3>
+            <p className="opacity-70 text-sm mb-8 leading-relaxed">This will permanently erase all your transaction records. This action cannot be undone.</p>
             <div className="flex gap-4">
               <button onClick={() => setShowConfirmModal(false)} className="flex-1 p-3 rounded-xl font-bold hover:bg-slate-500/10 transition">No</button>
               <button onClick={() => { localStorage.removeItem('finSaveData'); window.location.reload(); }} className="flex-1 p-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition">Yes</button>
