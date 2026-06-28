@@ -103,13 +103,14 @@ export default function FinSaveDashboard() {
 
   return (
     <div className={`flex min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      <aside className={`border-r transition-all duration-300 flex flex-col py-6 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
+      {/* Sidebar now has fixed height and overflow-hidden to prevent jumpiness */}
+      <aside className={`border-r transition-all duration-300 flex flex-col h-screen sticky top-0 py-6 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
         <div className={`flex items-center gap-3 mb-10 px-6 ${!isSidebarOpen && 'justify-center px-0'}`}>
             <Wallet className="text-cyan-500 shrink-0" size={28} />
             {isSidebarOpen && <h1 className="font-bold text-xl tracking-tight">FinSave</h1>}
         </div>
         
-        <nav className="flex-1 space-y-2 px-3">
+        <nav className="flex-1 space-y-2 px-3 overflow-y-auto">
             {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
                 <button key={item.name} onClick={() => setActivePage(item.name)} 
                     className={`w-full flex items-center p-3 rounded-xl transition ${activePage === item.name ? 'bg-cyan-500 text-white' : 'hover:bg-slate-500/10'} ${!isSidebarOpen && 'justify-center'}`}>
@@ -119,7 +120,7 @@ export default function FinSaveDashboard() {
             ))}
         </nav>
 
-        <div className="px-3 space-y-4 pt-6 border-t border-slate-500/20">
+        <div className="px-3 space-y-4 pt-6 border-t border-slate-500/20 shrink-0">
             <button 
                 onClick={() => { 
                     const confirmed = window.confirm("Are you sure you want to delete all transaction records? This action cannot be undone.");
