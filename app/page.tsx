@@ -106,15 +106,17 @@ export default function FinSaveDashboard() {
   return (
     <div className={`flex min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
-      {/* Sidebar: Flex Column to allow mt-auto on the bottom section */}
+      {/* Sidebar with forced vertical spacing */}
       <aside className={`border-r transition-all duration-300 h-screen sticky top-0 py-6 flex flex-col ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
         
-        <div className={`flex items-center gap-3 px-6 mb-10 ${!isSidebarOpen && 'justify-center px-0'}`}>
+        {/* Header */}
+        <div className={`flex items-center gap-3 px-6 mb-10 shrink-0 ${!isSidebarOpen && 'justify-center px-0'}`}>
             <Wallet className="text-cyan-500 shrink-0" size={28} />
             {isSidebarOpen && <h1 className="font-bold text-xl tracking-tight">FinSave</h1>}
         </div>
         
-        <nav className="flex flex-col gap-y-2 px-3">
+        {/* Navigation: flex-1 makes this take all available middle space, pushing the footer down */}
+        <nav className="flex-1 flex flex-col gap-y-2 px-3">
             {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
                 <button key={item.name} onClick={() => setActivePage(item.name)} 
                     className={`w-full flex items-center p-3 rounded-xl transition ${activePage === item.name ? 'bg-cyan-500 text-white' : 'hover:bg-slate-500/10'} ${!isSidebarOpen && 'justify-center'}`}>
@@ -124,8 +126,8 @@ export default function FinSaveDashboard() {
             ))}
         </nav>
 
-        {/* This div uses mt-auto to push everything inside it to the bottom */}
-        <div className="mt-auto px-3 pt-6 border-t border-slate-500/20 flex flex-col gap-y-3">
+        {/* Footer: Stays pinned to the bottom due to flex-1 above */}
+        <div className="shrink-0 px-3 pt-6 border-t border-slate-500/20 flex flex-col gap-y-3">
             <button 
                 onClick={() => { 
                     const confirmed = window.confirm("Are you sure you want to delete all transaction records?");
