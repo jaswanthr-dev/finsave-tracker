@@ -140,7 +140,10 @@ export default function FinSaveDashboard() {
             {cards.map((s, i) => (
                 <div key={i} className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                     <p className="text-sm font-semibold opacity-70 tracking-wide">{s.title}</p>
-                    <h3 className={`text-4xl font-extrabold mt-2 tracking-tight ${s.color}`}>₹{Math.abs(s.val).toLocaleString('en-IN')}</h3>
+                    {/* Fixed overflow issue with text-break and responsive sizing */}
+                    <h3 className={`text-2xl md:text-4xl font-extrabold mt-2 tracking-tight break-words ${s.color}`}>
+                        ₹{Math.abs(s.val).toLocaleString('en-IN')}
+                    </h3>
                 </div>
             ))}
         </div>
