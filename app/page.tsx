@@ -33,7 +33,6 @@ export default function FinSaveDashboard() {
   });
 
   useEffect(() => {
-    // Load Data
     const saved = localStorage.getItem('finSaveData');
     if (saved) {
       setTransactions(JSON.parse(saved));
@@ -50,13 +49,8 @@ export default function FinSaveDashboard() {
         { id: 9, date: '2026-06-28', desc: 'Shopping', amount: -5000, type: 'Expense', category: 'Shopping' },
       ]);
     }
-    
-    // Load Theme
     const savedTheme = localStorage.getItem('isDarkMode');
-    if (savedTheme !== null) {
-      setIsDarkMode(JSON.parse(savedTheme));
-    }
-    
+    if (savedTheme !== null) setIsDarkMode(JSON.parse(savedTheme));
     setIsMounted(true);
   }, []);
 
@@ -101,17 +95,11 @@ export default function FinSaveDashboard() {
     isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
   }`;
 
-  const getCards = () => {
-    if (activePage === 'INCOME') return [{ title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' }];
-    if (activePage === 'EXPENSES') return [{ title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }];
-    return [
-        { title: 'Current Balance', val: stats.bal, color: isDarkMode ? 'text-white' : 'text-slate-900' },
-        { title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' },
-        { title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }
-    ];
-  };
-
-  const cards = getCards();
+  const cards = activePage === 'INCOME' ? [{ title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' }] : 
+                activePage === 'EXPENSES' ? [{ title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }] :
+                [{ title: 'Current Balance', val: stats.bal, color: isDarkMode ? 'text-white' : 'text-slate-900' },
+                 { title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' },
+                 { title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }];
 
   return (
     <div className={`flex min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
@@ -120,6 +108,8 @@ export default function FinSaveDashboard() {
             <Wallet className="text-cyan-500 shrink-0" size={28} />
             {isSidebarOpen && <h1 className="font-bold text-xl tracking-tight">FinSave</h1>}
         </div>
+        
+        {/* Navigation area takes flexible space */}
         <nav className="flex-1 space-y-2 px-3">
             {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
                 <button key={item.name} onClick={() => setActivePage(item.name)} 
@@ -129,7 +119,9 @@ export default function FinSaveDashboard() {
                 </button>
             ))}
         </nav>
-        <div className="px-3 space-y-4">
+
+        {/* Footer area is pinned to the bottom */}
+        <div className="px-3 space-y-4 pt-6 border-t border-slate-500/20">
             <button 
                 onClick={() => { localStorage.removeItem('finSaveData'); window.location.reload(); }} 
                 className={`w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition ${!isSidebarOpen ? 'justify-center' : 'justify-start'}`}
@@ -144,7 +136,6 @@ export default function FinSaveDashboard() {
 
       <main className="flex-1 p-8 overflow-y-auto">
         <h2 className="text-3xl font-extrabold mb-8 text-cyan-500">FinSave - {activePage}</h2>
-
         <div className={`grid grid-cols-1 ${cards.length > 1 ? 'md:grid-cols-3' : 'md:grid-cols-1'} gap-6 mb-8`}>
             {cards.map((s, i) => (
                 <div key={i} className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
@@ -153,7 +144,6 @@ export default function FinSaveDashboard() {
                 </div>
             ))}
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
                 {activePage === 'DASHBOARD' && (
@@ -164,40 +154,30 @@ export default function FinSaveDashboard() {
                                 <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#334155' : '#e2e8f0'} vertical={false} />
                                 <XAxis dataKey="date" stroke="#64748b" />
                                 <YAxis stroke="#64748b" />
-                                <Tooltip 
-                                    contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#334155', color: isDarkMode ? '#fff' : '#000', borderRadius: '8px' }} 
-                                    formatter={(value: any) => [`₹${Math.abs(Number(value)).toLocaleString('en-IN')}`, 'Amount']}
-                                />
+                                <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#334155', borderRadius: '8px' }} formatter={(v: any) => [`₹${Math.abs(Number(v)).toLocaleString('en-IN')}`, 'Amount']} />
                                 <Bar dataKey="amount" fill="#06b6d4" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 )}
-                
                 <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                     <h3 className="font-bold mb-4">Transaction Records</h3>
                     <div className="space-y-3">
                         {filteredData.map(t => (
                             <div key={t.id} className={`flex justify-between items-center py-3 border-b ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'}`}>
                                 <div><p className="font-bold">{t.desc}</p><p className="text-xs opacity-50">{t.date} • {t.category}</p></div>
-                                <span className={`font-bold text-lg ${t.amount > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                    {t.amount > 0 ? '+' : ''}₹{Math.abs(t.amount).toLocaleString('en-IN')}
-                                </span>
+                                <span className={`font-bold text-lg ${t.amount > 0 ? 'text-emerald-500' : 'text-red-500'}`}>{t.amount > 0 ? '+' : ''}₹{Math.abs(t.amount).toLocaleString('en-IN')}</span>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
-
             <div className={`p-6 rounded-2xl border h-fit ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
                 <h3 className="font-bold mb-6 flex items-center gap-2"><PlusCircle className="text-cyan-500"/> New Entry</h3>
                 <div className="space-y-4">
                     <input type="text" placeholder="Description" className={inputStyle} onChange={e => setFormData({...formData, desc: e.target.value})} value={formData.desc}/>
                     <input type="number" placeholder="Amount (₹)" className={inputStyle} onChange={e => setFormData({...formData, amount: e.target.value})} value={formData.amount}/>
-                    <select className={inputStyle} value={formData.type} onChange={e => {
-                        const newType = e.target.value as 'Income' | 'Expense';
-                        setFormData({...formData, type: newType, category: CATEGORIES[newType][0]});
-                    }}>
+                    <select className={inputStyle} value={formData.type} onChange={e => { const t = e.target.value as 'Income'|'Expense'; setFormData({...formData, type: t, category: CATEGORIES[t][0]}); }}>
                         <option value="Income">Income</option>
                         <option value="Expense">Expense</option>
                     </select>
