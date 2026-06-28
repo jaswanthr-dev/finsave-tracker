@@ -34,12 +34,12 @@ FinSave is a high-performance financial tracking application designed for real-t
 ## 📁 Project Structure
 
 finsave-tracker/
-├── src/
-│   ├── app/
-│   ├── components/
-│   └── public/
-├── package.json
-└── README.md
+|-- src/
+|   |-- app/
+|   |-- components/
+|   |-- public/
+|-- package.json
+|-- README.md
 
 ## 🛣 Future Roadmap
 - [ ] Implement Authentication (NextAuth.js) for user-specific data.
