@@ -105,14 +105,18 @@ export default function FinSaveDashboard() {
 
   return (
     <div className={`flex min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      
+      {/* Sidebar: Grid layout locks top, middle, and bottom sections independently */}
       <aside className={`border-r transition-all duration-300 h-screen sticky top-0 grid grid-rows-[auto_1fr_auto] py-6 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
         
+        {/* Top: Header */}
         <div className={`flex items-center gap-3 px-6 ${!isSidebarOpen && 'justify-center px-0'}`}>
             <Wallet className="text-cyan-500 shrink-0" size={28} />
             {isSidebarOpen && <h1 className="font-bold text-xl tracking-tight">FinSave</h1>}
         </div>
         
-        <nav className="space-y-2 px-3 mt-10">
+        {/* Middle: Navigation with fixed gap between items */}
+        <nav className="flex flex-col gap-y-2 px-3 pt-10">
             {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
                 <button key={item.name} onClick={() => setActivePage(item.name)} 
                     className={`w-full flex items-center p-3 rounded-xl transition ${activePage === item.name ? 'bg-cyan-500 text-white' : 'hover:bg-slate-500/10'} ${!isSidebarOpen && 'justify-center'}`}>
@@ -122,10 +126,11 @@ export default function FinSaveDashboard() {
             ))}
         </nav>
 
-        <div className="px-3 space-y-4 pt-6 border-t border-slate-500/20">
+        {/* Bottom: System Actions with top border separation */}
+        <div className="px-3 pt-6 border-t border-slate-500/20 flex flex-col gap-y-3">
             <button 
                 onClick={() => { 
-                    const confirmed = window.confirm("Are you sure you want to delete all transaction records? This action cannot be undone.");
+                    const confirmed = window.confirm("Are you sure you want to delete all transaction records?");
                     if (confirmed) { localStorage.removeItem('finSaveData'); window.location.reload(); }
                 }} 
                 className={`w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition ${!isSidebarOpen ? 'justify-center' : 'justify-start'}`}
@@ -140,6 +145,7 @@ export default function FinSaveDashboard() {
 
       <main className="flex-1 p-8 overflow-y-auto">
         <h2 className="text-3xl font-extrabold mb-8 text-cyan-500">FinSave - {activePage}</h2>
+        
         <div className={`grid grid-cols-1 ${cards.length > 1 ? 'md:grid-cols-3' : 'md:grid-cols-1'} gap-6 mb-8`}>
             {cards.map((s, i) => (
                 <div key={i} className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
@@ -148,6 +154,7 @@ export default function FinSaveDashboard() {
                 </div>
             ))}
         </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
                 {activePage === 'DASHBOARD' && (
@@ -164,6 +171,7 @@ export default function FinSaveDashboard() {
                         </ResponsiveContainer>
                     </div>
                 )}
+                
                 <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                     <h3 className="font-bold mb-4">Transaction Records</h3>
                     <div className="space-y-3">
@@ -176,6 +184,7 @@ export default function FinSaveDashboard() {
                     </div>
                 </div>
             </div>
+
             <div className={`p-6 rounded-2xl border h-fit ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
                 <h3 className="font-bold mb-6 flex items-center gap-2"><PlusCircle className="text-cyan-500"/> New Entry</h3>
                 <div className="space-y-4">
