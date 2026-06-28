@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { LayoutDashboard, Wallet, TrendingUp, TrendingDown, History, PlusCircle, Menu, Sun, Moon, Trash2 } from 'lucide-react';
+import { LayoutDashboard, Wallet, TrendingUp, TrendingDown, History, PlusCircle, Menu, Sun, Moon } from 'lucide-react';
 
 interface Transaction {
   id: number;
@@ -71,21 +71,30 @@ export default function FinSaveDashboard() {
 
   if (!isMounted) return null;
 
-  // Dynamic input styling based on theme
   const inputStyle = `w-full p-3 rounded-xl border focus:outline-none focus:border-cyan-500 transition-colors ${
     isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
   }`;
 
+  // Card logic: show specific cards based on the active page
+  const getCards = () => {
+    if (activePage === 'INCOME') return [{ title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' }];
+    if (activePage === 'EXPENSES') return [{ title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }];
+    return [
+        { title: 'Current Balance', val: stats.bal, color: isDarkMode ? 'text-white' : 'text-slate-900' },
+        { title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' },
+        { title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }
+    ];
+  };
+
+  const cards = getCards();
+
   return (
     <div className={`flex min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      
-      {/* Sidebar */}
       <aside className={`border-r transition-all duration-300 flex flex-col py-6 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
         <div className={`flex items-center gap-3 mb-10 px-6 ${!isSidebarOpen && 'justify-center px-0'}`}>
             <Wallet className="text-cyan-500 shrink-0" size={28} />
             {isSidebarOpen && <h1 className="font-bold text-xl tracking-tight">FinSave</h1>}
         </div>
-
         <nav className="flex-1 space-y-2 px-3">
             {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
                 <button key={item.name} onClick={() => setActivePage(item.name)} 
@@ -95,32 +104,23 @@ export default function FinSaveDashboard() {
                 </button>
             ))}
         </nav>
-
         <div className="px-3 space-y-2">
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center"><Menu size={20}/></button>
             <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-8 overflow-y-auto">
         <h2 className="text-3xl font-extrabold mb-8 text-cyan-500">FinSave - {activePage}</h2>
 
-        {activePage === 'DASHBOARD' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {[ 
-                    {title: 'Balance', val: stats.bal, color: isDarkMode ? 'text-white' : 'text-slate-900', page: 'DASHBOARD'}, 
-                    {title: 'INCOME', val: stats.inc, color: 'text-emerald-500', page: 'INCOME'}, 
-                    {title: 'EXPENSES', val: stats.exp, color: 'text-red-500', page: 'EXPENSES'} 
-                ].map((s, i) => (
-                    <button key={i} onClick={() => setActivePage(s.page)} className={`p-6 rounded-2xl border text-left hover:border-cyan-500/50 transition-all ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <p className="text-sm font-semibold opacity-70 tracking-wide">{s.title}</p>
-                        {/* Increased text size to 4xl for better visibility */}
-                        <h3 className={`text-4xl font-extrabold mt-2 tracking-tight ${s.color}`}>₹{s.val.toLocaleString('en-IN')}</h3>
-                    </button>
-                ))}
-            </div>
-        )}
+        <div className={`grid grid-cols-1 ${cards.length > 1 ? 'md:grid-cols-3' : 'md:grid-cols-1'} gap-6 mb-8`}>
+            {cards.map((s, i) => (
+                <div key={i} className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                    <p className="text-sm font-semibold opacity-70 tracking-wide">{s.title}</p>
+                    <h3 className={`text-4xl font-extrabold mt-2 tracking-tight ${s.color}`}>₹{Math.abs(s.val).toLocaleString('en-IN')}</h3>
+                </div>
+            ))}
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
@@ -132,7 +132,10 @@ export default function FinSaveDashboard() {
                                 <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#334155' : '#e2e8f0'} vertical={false} />
                                 <XAxis dataKey="date" stroke="#64748b" />
                                 <YAxis stroke="#64748b" />
-                                <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#334155', color: isDarkMode ? '#fff' : '#000' }} />
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#334155', color: isDarkMode ? '#fff' : '#000', borderRadius: '8px' }} 
+                                    formatter={(value: any) => [`₹${Math.abs(Number(value)).toLocaleString('en-IN')}`, 'Amount']}
+                                />
                                 <Bar dataKey="amount" fill="#06b6d4" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -145,24 +148,24 @@ export default function FinSaveDashboard() {
                         {filteredData.map(t => (
                             <div key={t.id} className={`flex justify-between items-center py-3 border-b ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'}`}>
                                 <div><p className="font-bold">{t.desc}</p><p className="text-xs opacity-50">{t.date} • {t.category}</p></div>
-                                <div className="flex items-center gap-4">
-                                    <span className={`font-bold text-lg ${t.amount > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                        {t.amount > 0 ? '+' : ''}₹{t.amount.toLocaleString('en-IN')}
-                                    </span>
-                                </div>
+                                <span className={`font-bold text-lg ${t.amount > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                    {t.amount > 0 ? '+' : ''}₹{Math.abs(t.amount).toLocaleString('en-IN')}
+                                </span>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
 
-            {/* Input Form */}
             <div className={`p-6 rounded-2xl border h-fit ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
                 <h3 className="font-bold mb-6 flex items-center gap-2"><PlusCircle className="text-cyan-500"/> New Entry</h3>
                 <div className="space-y-4">
                     <input type="text" placeholder="Description" className={inputStyle} onChange={e => setFormData({...formData, desc: e.target.value})} value={formData.desc}/>
                     <input type="number" placeholder="Amount (₹)" className={inputStyle} onChange={e => setFormData({...formData, amount: e.target.value})} value={formData.amount}/>
-                    <select className={inputStyle} onChange={e => setFormData({...formData, type: e.target.value as any, category: CATEGORIES[e.target.value as 'Income' | 'Expense'][0]})}>
+                    <select className={inputStyle} value={formData.type} onChange={e => {
+                        const newType = e.target.value as 'Income' | 'Expense';
+                        setFormData({...formData, type: newType, category: CATEGORIES[newType][0]});
+                    }}>
                         <option value="Income">Income</option>
                         <option value="Expense">Expense</option>
                     </select>
