@@ -23,15 +23,8 @@ export default function FinSaveDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [activePage, setActivePage] = useState('DASHBOARD');
   
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 85000, type: 'Income', category: 'Salary' },
-    { id: 2, date: '2026-06-26', desc: 'Freelance Web Project', amount: 15000, type: 'Income', category: 'Freelance' },
-    { id: 3, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
-    { id: 4, date: '2026-06-27', desc: 'Internet Bill', amount: -1200, type: 'Expense', category: 'Utilities' },
-    { id: 5, date: '2026-06-28', desc: 'Stock Dividends', amount: 3500, type: 'Income', category: 'Dividends' },
-    { id: 6, date: '2026-06-28', desc: 'Uber to Office', amount: -450, type: 'Expense', category: 'Transport' },
-    { id: 7, date: '2026-06-28', desc: 'Movie Tickets', amount: -800, type: 'Expense', category: 'Entertainment' },
-  ]);
+  // Data state initialized as empty, then populated by localStorage
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [formData, setFormData] = useState({ 
     date: new Date().toISOString().split('T')[0], 
@@ -41,7 +34,19 @@ export default function FinSaveDashboard() {
     category: 'Salary' 
   });
 
-  useEffect(() => { setIsMounted(true); }, []);
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('finSaveData');
+    if (saved) {
+      setTransactions(JSON.parse(saved));
+    } else {
+      setTransactions([
+        { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 85000, type: 'Income', category: 'Salary' },
+        { id: 3, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
+      ]);
+    }
+    setIsMounted(true);
+  }, []);
 
   const stats = useMemo(() => {
     const bal = transactions.reduce((acc, t) => acc + t.amount, 0);
@@ -58,14 +63,17 @@ export default function FinSaveDashboard() {
 
   const addTransaction = () => {
     if (!formData.desc || !formData.amount) return;
-    setTransactions(prev => [{
+    const newTransactions = [{
       id: Date.now(),
       date: formData.date,
       desc: formData.desc,
       category: formData.category,
       type: formData.type,
       amount: formData.type === 'Expense' ? -Math.abs(Number(formData.amount)) : Math.abs(Number(formData.amount))
-    }, ...prev]);
+    }, ...transactions];
+    
+    setTransactions(newTransactions);
+    localStorage.setItem('finSaveData', JSON.stringify(newTransactions));
     setFormData({...formData, desc: '', amount: ''});
   };
 
@@ -75,7 +83,6 @@ export default function FinSaveDashboard() {
     isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
   }`;
 
-  // Card logic: show specific cards based on the active page
   const getCards = () => {
     if (activePage === 'INCOME') return [{ title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' }];
     if (activePage === 'EXPENSES') return [{ title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }];
