@@ -31,6 +31,18 @@ FinSave is a high-performance financial tracking application designed for real-t
 * **Performance:** Leveraged the Next.js App Router to reduce initial load time and optimize rendering.
 * **Efficiency:** Used Recharts because it integrates seamlessly with React state, reducing the need for heavy, external data visualization libraries.
 
+---
+
+## 📁 Project Structure
+
+finsave-tracker/
+├── src/
+│   ├── app/           # Next.js routes
+│   ├── components/    # Recharts & UI components
+│   └── public/        # Assets
+├── package.json
+└── README.md
+
 ## 🛣 Future Roadmap
 - [ ] Implement Authentication (NextAuth.js) for user-specific data.
 - [ ] Add CSV export functionality for financial reporting.
