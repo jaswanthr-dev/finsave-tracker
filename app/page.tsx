@@ -32,6 +32,8 @@ export default function FinSaveDashboard() {
     category: 'Salary' 
   });
 
+  // This hook ensures that on every hard refresh, it checks if data exists.
+  // If not, it applies the default set.
   useEffect(() => {
     const saved = localStorage.getItem('finSaveData');
     if (saved) {
@@ -55,6 +57,15 @@ export default function FinSaveDashboard() {
     if (savedTheme !== null) setIsDarkMode(JSON.parse(savedTheme));
     setIsMounted(true);
   }, []);
+
+  // Simple clear: Removes the record, so the next refresh triggers the default data
+  const clearData = () => {
+    const confirmed = window.confirm("Are you sure? All data will be cleared, but default data will return on refresh.");
+    if (confirmed) {
+      localStorage.removeItem('finSaveData');
+      window.location.reload(); 
+    }
+  };
 
   const toggleTheme = () => {
     const newTheme = !isDarkMode;
@@ -105,12 +116,9 @@ export default function FinSaveDashboard() {
 
   return (
     <div className={`flex min-h-screen ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      
       <aside className={`border-r transition-all duration-300 h-screen sticky top-0 flex flex-col flex-shrink-0 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
-        
         <div className="h-20 flex items-center gap-3 px-6"><Wallet className="text-cyan-500" size={28} />{isSidebarOpen && <h1 className="font-bold text-xl">FinSave</h1>}</div>
-        
-        <nav className="flex-1 overflow-y-auto flex flex-col gap-y-2 px-3">
+        <nav className="flex flex-col gap-y-2 px-3 pt-6">
             {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
                 <button key={item.name} onClick={() => setActivePage(item.name)} 
                     className={`w-full flex items-center p-3 rounded-xl transition ${activePage === item.name ? 'bg-cyan-500 text-white' : 'hover:bg-slate-500/10'} ${!isSidebarOpen && 'justify-center'}`}>
@@ -119,15 +127,8 @@ export default function FinSaveDashboard() {
                 </button>
             ))}
         </nav>
-
-        <div className="h-48 px-3 pt-6 border-t border-slate-500/20 flex flex-col gap-y-3">
-            <button 
-                onClick={() => { 
-                    const confirmed = window.confirm("Are you sure you want to delete all transaction records?");
-                    if (confirmed) { localStorage.removeItem('finSaveData'); window.location.reload(); }
-                }} 
-                className={`w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition ${!isSidebarOpen ? 'justify-center' : 'justify-start'}`}
-            >
+        <div className="mt-auto px-3 pb-6 pt-6 border-t border-slate-500/20 flex flex-col gap-y-3">
+            <button onClick={clearData} className={`w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition ${!isSidebarOpen ? 'justify-center' : 'justify-start'}`}>
                 <Trash2 size={20} />
                 {isSidebarOpen && <span className="ml-4 font-medium text-sm">Clear All Data</span>}
             </button>
