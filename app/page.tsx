@@ -25,7 +25,12 @@ export default function FinSaveDashboard() {
   
   const [transactions, setTransactions] = useState<Transaction[]>([
     { id: 1, date: '2026-06-25', desc: 'Tech Corp Salary', amount: 85000, type: 'Income', category: 'Salary' },
-    { id: 2, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
+    { id: 2, date: '2026-06-26', desc: 'Freelance Web Project', amount: 15000, type: 'Income', category: 'Freelance' },
+    { id: 3, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
+    { id: 4, date: '2026-06-27', desc: 'Internet Bill', amount: -1200, type: 'Expense', category: 'Utilities' },
+    { id: 5, date: '2026-06-28', desc: 'Stock Dividends', amount: 3500, type: 'Income', category: 'Dividends' },
+    { id: 6, date: '2026-06-28', desc: 'Uber to Office', amount: -450, type: 'Expense', category: 'Transport' },
+    { id: 7, date: '2026-06-28', desc: 'Movie Tickets', amount: -800, type: 'Expense', category: 'Entertainment' },
   ]);
 
   const [formData, setFormData] = useState({ 
@@ -66,6 +71,11 @@ export default function FinSaveDashboard() {
 
   if (!isMounted) return null;
 
+  // Dynamic input styling based on theme
+  const inputStyle = `w-full p-3 rounded-xl border focus:outline-none focus:border-cyan-500 transition-colors ${
+    isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+  }`;
+
   return (
     <div className={`flex min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
@@ -98,10 +108,15 @@ export default function FinSaveDashboard() {
 
         {activePage === 'DASHBOARD' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {[ {title: 'Balance', val: stats.bal, color: 'text-white', page: 'DASHBOARD'}, {title: 'INCOME', val: stats.inc, color: 'text-emerald-500', page: 'INCOME'}, {title: 'EXPENSES', val: stats.exp, color: 'text-red-500', page: 'EXPENSES'} ].map((s, i) => (
+                {[ 
+                    {title: 'Balance', val: stats.bal, color: isDarkMode ? 'text-white' : 'text-slate-900', page: 'DASHBOARD'}, 
+                    {title: 'INCOME', val: stats.inc, color: 'text-emerald-500', page: 'INCOME'}, 
+                    {title: 'EXPENSES', val: stats.exp, color: 'text-red-500', page: 'EXPENSES'} 
+                ].map((s, i) => (
                     <button key={i} onClick={() => setActivePage(s.page)} className={`p-6 rounded-2xl border text-left hover:border-cyan-500/50 transition-all ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <p className="text-sm opacity-60">{s.title}</p>
-                        <h3 className={`text-2xl font-bold mt-1 ${s.color}`}>₹{s.val.toLocaleString('en-IN')}</h3>
+                        <p className="text-sm font-semibold opacity-70 tracking-wide">{s.title}</p>
+                        {/* Increased text size to 4xl for better visibility */}
+                        <h3 className={`text-4xl font-extrabold mt-2 tracking-tight ${s.color}`}>₹{s.val.toLocaleString('en-IN')}</h3>
                     </button>
                 ))}
             </div>
@@ -117,7 +132,7 @@ export default function FinSaveDashboard() {
                                 <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#334155' : '#e2e8f0'} vertical={false} />
                                 <XAxis dataKey="date" stroke="#64748b" />
                                 <YAxis stroke="#64748b" />
-                                <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#334155' }} />
+                                <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#334155', color: isDarkMode ? '#fff' : '#000' }} />
                                 <Bar dataKey="amount" fill="#06b6d4" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -128,30 +143,33 @@ export default function FinSaveDashboard() {
                     <h3 className="font-bold mb-4">Transaction Records</h3>
                     <div className="space-y-3">
                         {filteredData.map(t => (
-                            <div key={t.id} className="flex justify-between items-center py-3 border-b border-slate-800/50">
+                            <div key={t.id} className={`flex justify-between items-center py-3 border-b ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'}`}>
                                 <div><p className="font-bold">{t.desc}</p><p className="text-xs opacity-50">{t.date} • {t.category}</p></div>
-                                <span className={`font-bold ${t.amount > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                    {t.amount > 0 ? '+' : ''}₹{t.amount.toLocaleString('en-IN')}
-                                </span>
+                                <div className="flex items-center gap-4">
+                                    <span className={`font-bold text-lg ${t.amount > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                        {t.amount > 0 ? '+' : ''}₹{t.amount.toLocaleString('en-IN')}
+                                    </span>
+                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
 
-            <div className={`p-6 rounded-2xl border h-fit ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+            {/* Input Form */}
+            <div className={`p-6 rounded-2xl border h-fit ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
                 <h3 className="font-bold mb-6 flex items-center gap-2"><PlusCircle className="text-cyan-500"/> New Entry</h3>
                 <div className="space-y-4">
-                    <input type="text" placeholder="Description" className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl" onChange={e => setFormData({...formData, desc: e.target.value})} value={formData.desc}/>
-                    <input type="number" placeholder="Amount (₹)" className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl" onChange={e => setFormData({...formData, amount: e.target.value})} value={formData.amount}/>
-                    <select className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl" onChange={e => setFormData({...formData, type: e.target.value as any, category: CATEGORIES[e.target.value as 'Income' | 'Expense'][0]})}>
+                    <input type="text" placeholder="Description" className={inputStyle} onChange={e => setFormData({...formData, desc: e.target.value})} value={formData.desc}/>
+                    <input type="number" placeholder="Amount (₹)" className={inputStyle} onChange={e => setFormData({...formData, amount: e.target.value})} value={formData.amount}/>
+                    <select className={inputStyle} onChange={e => setFormData({...formData, type: e.target.value as any, category: CATEGORIES[e.target.value as 'Income' | 'Expense'][0]})}>
                         <option value="Income">Income</option>
                         <option value="Expense">Expense</option>
                     </select>
-                    <select className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+                    <select className={inputStyle} value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
                         {CATEGORIES[formData.type].map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
-                    <button onClick={addTransaction} className="w-full bg-cyan-500 text-white p-3 rounded-xl font-bold hover:bg-cyan-600 transition">Save Transaction</button>
+                    <button onClick={addTransaction} className="w-full bg-cyan-500 text-white p-3 rounded-xl font-bold hover:bg-cyan-600 transition shadow-md">Save Transaction</button>
                 </div>
             </div>
         </div>
