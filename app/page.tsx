@@ -22,7 +22,6 @@ export default function FinSaveDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [activePage, setActivePage] = useState('DASHBOARD');
-  
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [formData, setFormData] = useState({ 
@@ -34,6 +33,7 @@ export default function FinSaveDashboard() {
   });
 
   useEffect(() => {
+    // Load Data
     const saved = localStorage.getItem('finSaveData');
     if (saved) {
       setTransactions(JSON.parse(saved));
@@ -43,8 +43,21 @@ export default function FinSaveDashboard() {
         { id: 3, date: '2026-06-27', desc: 'Weekly Groceries', amount: -4500, type: 'Expense', category: 'Food' },
       ]);
     }
+    
+    // Load Theme Preference
+    const savedTheme = localStorage.getItem('isDarkMode');
+    if (savedTheme !== null) {
+      setIsDarkMode(JSON.parse(savedTheme));
+    }
+    
     setIsMounted(true);
   }, []);
+
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    localStorage.setItem('isDarkMode', JSON.stringify(newTheme));
+  };
 
   const stats = useMemo(() => {
     const bal = transactions.reduce((acc, t) => acc + t.amount, 0);
@@ -115,7 +128,7 @@ export default function FinSaveDashboard() {
                 {isSidebarOpen && <span className="ml-4 font-medium text-sm">Clear All Data</span>}
             </button>
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center"><Menu size={20}/></button>
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
+            <button onClick={toggleTheme} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
         </div>
       </aside>
 
