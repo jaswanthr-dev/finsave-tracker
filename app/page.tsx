@@ -109,7 +109,6 @@ export default function FinSaveDashboard() {
             {isSidebarOpen && <h1 className="font-bold text-xl tracking-tight">FinSave</h1>}
         </div>
         
-        {/* Navigation area takes flexible space */}
         <nav className="flex-1 space-y-2 px-3">
             {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
                 <button key={item.name} onClick={() => setActivePage(item.name)} 
@@ -120,10 +119,15 @@ export default function FinSaveDashboard() {
             ))}
         </nav>
 
-        {/* Footer area is pinned to the bottom */}
         <div className="px-3 space-y-4 pt-6 border-t border-slate-500/20">
             <button 
-                onClick={() => { localStorage.removeItem('finSaveData'); window.location.reload(); }} 
+                onClick={() => { 
+                    const confirmed = window.confirm("Are you sure you want to delete all transaction records? This action cannot be undone.");
+                    if (confirmed) {
+                        localStorage.removeItem('finSaveData');
+                        window.location.reload();
+                    }
+                }} 
                 className={`w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition ${!isSidebarOpen ? 'justify-center' : 'justify-start'}`}
             >
                 <Trash2 size={20} className="shrink-0" />
