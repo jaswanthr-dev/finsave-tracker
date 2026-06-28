@@ -3,14 +3,11 @@
 A professional, high-performance financial tracking application designed for data-driven personal budget management.
 
 ## 📑 Table of Contents
-- [Project Overview](#-project-overview)
-- [Key Features](#-key-features)
-- [Engineering & Tech Stack](#-engineering--tech-stack)
-- [System Architecture](#-system-architecture)
-- [Getting Started](#-getting-started)
-- [Roadmap](#-roadmap)
-- [Engineering Challenges](#-engineering-challenges)
-- [License](#-license)
+- [Project Overview](#project-overview)
+- [Key Features](#key-features)
+- [Engineering & Tech Stack](#engineering--tech-stack)
+- [System Architecture](#system-architecture)
+- [Getting Started](#getting-started)
 
 ---
 
