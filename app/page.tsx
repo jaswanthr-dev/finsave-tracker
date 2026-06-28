@@ -23,6 +23,7 @@ export default function FinSaveDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [activePage, setActivePage] = useState('DASHBOARD');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const [formData, setFormData] = useState({ 
     date: new Date().toISOString().split('T')[0], 
@@ -56,24 +57,16 @@ export default function FinSaveDashboard() {
     setIsMounted(true);
   }, []);
 
+  const confirmDelete = () => {
+    localStorage.removeItem('finSaveData');
+    window.location.reload();
+  };
+
   const toggleTheme = () => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
     localStorage.setItem('isDarkMode', JSON.stringify(newTheme));
   };
-
-  const stats = useMemo(() => {
-    const bal = transactions.reduce((acc, t) => acc + t.amount, 0);
-    const inc = transactions.filter(t => t.amount > 0).reduce((acc, t) => acc + t.amount, 0);
-    const exp = transactions.filter(t => t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0);
-    return { bal, inc, exp };
-  }, [transactions]);
-
-  const filteredData = transactions.filter(t => 
-    activePage === 'DASHBOARD' || activePage === 'HISTORY' ? true : 
-    activePage === 'INCOME' ? t.type === 'Income' : 
-    activePage === 'EXPENSES' ? t.type === 'Expense' : true
-  );
 
   const addTransaction = () => {
     if (!formData.desc || !formData.amount) return;
@@ -85,7 +78,6 @@ export default function FinSaveDashboard() {
       type: formData.type,
       amount: formData.type === 'Expense' ? -Math.abs(Number(formData.amount)) : Math.abs(Number(formData.amount))
     }, ...transactions];
-    
     setTransactions(newTransactions);
     localStorage.setItem('finSaveData', JSON.stringify(newTransactions));
     setFormData({...formData, desc: '', amount: ''});
@@ -93,51 +85,40 @@ export default function FinSaveDashboard() {
 
   if (!isMounted) return null;
 
-  const inputStyle = `w-full p-3 rounded-xl border focus:outline-none focus:border-cyan-500 transition-colors ${
-    isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'
-  }`;
+  const stats = {
+    bal: transactions.reduce((acc, t) => acc + t.amount, 0),
+    inc: transactions.filter(t => t.amount > 0).reduce((acc, t) => acc + t.amount, 0),
+    exp: transactions.filter(t => t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0)
+  };
 
-  const cards = activePage === 'INCOME' ? [{ title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' }] : 
-                activePage === 'EXPENSES' ? [{ title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }] :
-                [{ title: 'Current Balance', val: stats.bal, color: isDarkMode ? 'text-white' : 'text-slate-900' },
-                 { title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' },
-                 { title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }];
+  const filteredData = transactions.filter(t => activePage === 'DASHBOARD' || activePage === 'HISTORY' ? true : activePage === 'INCOME' ? t.type === 'Income' : activePage === 'EXPENSES' ? t.type === 'Expense' : true);
+  const inputStyle = `w-full p-3 rounded-xl border focus:outline-none focus:border-cyan-500 transition-colors ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-300 text-slate-900'}`;
+  const cards = activePage === 'INCOME' ? [{ title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' }] : activePage === 'EXPENSES' ? [{ title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }] : [{ title: 'Current Balance', val: stats.bal, color: isDarkMode ? 'text-white' : 'text-slate-900' }, { title: 'TOTAL INCOME', val: stats.inc, color: 'text-emerald-500' }, { title: 'TOTAL EXPENSES', val: stats.exp, color: 'text-red-500' }];
 
   return (
-    <div className={`flex min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      
-      {/* Sidebar: Grid layout locks top, middle, and bottom sections independently */}
-      <aside className={`border-r transition-all duration-300 h-screen sticky top-0 grid grid-rows-[auto_1fr_auto] py-6 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
-        
-        {/* Top: Header */}
-        <div className={`flex items-center gap-3 px-6 ${!isSidebarOpen && 'justify-center px-0'}`}>
-            <Wallet className="text-cyan-500 shrink-0" size={28} />
-            {isSidebarOpen && <h1 className="font-bold text-xl tracking-tight">FinSave</h1>}
+    <div className={`flex min-h-screen ${isDarkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className={`p-8 rounded-3xl shadow-2xl w-96 ${isDarkMode ? 'bg-slate-900 border border-slate-700' : 'bg-white'}`}>
+            <h3 className="text-xl font-bold mb-4">Delete All Data?</h3>
+            <p className="opacity-70 mb-8 text-sm">This will permanently remove all your transactions. Default records will be restored on refresh. This action cannot be undone.</p>
+            <div className="flex gap-4">
+              <button onClick={() => setShowConfirmModal(false)} className="flex-1 p-3 rounded-xl font-bold hover:bg-slate-500/10">No, Cancel</button>
+              <button onClick={confirmDelete} className="flex-1 p-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600">Yes, Delete</button>
+            </div>
+          </div>
         </div>
-        
-        {/* Middle: Navigation with fixed gap between items */}
+      )}
+
+      <aside className={`border-r h-screen sticky top-0 grid grid-rows-[auto_1fr_auto] py-6 ${isSidebarOpen ? 'w-64' : 'w-20'} ${isDarkMode ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
+        <div className="flex items-center gap-3 px-6"><Wallet className="text-cyan-500" size={28} />{isSidebarOpen && <h1 className="font-bold text-xl">FinSave</h1>}</div>
         <nav className="flex flex-col gap-y-2 px-3 pt-10">
             {[ {name: 'DASHBOARD', icon: LayoutDashboard}, {name: 'INCOME', icon: TrendingUp}, {name: 'EXPENSES', icon: TrendingDown}, {name: 'HISTORY', icon: History} ].map((item) => (
-                <button key={item.name} onClick={() => setActivePage(item.name)} 
-                    className={`w-full flex items-center p-3 rounded-xl transition ${activePage === item.name ? 'bg-cyan-500 text-white' : 'hover:bg-slate-500/10'} ${!isSidebarOpen && 'justify-center'}`}>
-                    <item.icon size={20} />
-                    {isSidebarOpen && <span className="ml-4 font-medium text-sm">{item.name}</span>}
-                </button>
+                <button key={item.name} onClick={() => setActivePage(item.name)} className={`w-full flex items-center p-3 rounded-xl ${activePage === item.name ? 'bg-cyan-500 text-white' : 'hover:bg-slate-500/10'}`}><item.icon size={20} />{isSidebarOpen && <span className="ml-4 font-medium text-sm">{item.name}</span>}</button>
             ))}
         </nav>
-
-        {/* Bottom: System Actions with top border separation */}
-        <div className="px-3 pt-6 border-t border-slate-500/20 flex flex-col gap-y-3">
-            <button 
-                onClick={() => { 
-                    const confirmed = window.confirm("Are you sure you want to delete all transaction records?");
-                    if (confirmed) { localStorage.removeItem('finSaveData'); window.location.reload(); }
-                }} 
-                className={`w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition ${!isSidebarOpen ? 'justify-center' : 'justify-start'}`}
-            >
-                <Trash2 size={20} className="shrink-0" />
-                {isSidebarOpen && <span className="ml-4 font-medium text-sm whitespace-nowrap">Clear All Data</span>}
-            </button>
+        <div className="px-3 pt-20 border-t border-slate-500/20 flex flex-col gap-y-3">
+            <button onClick={() => setShowConfirmModal(true)} className="w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl"><Trash2 size={20} />{isSidebarOpen && <span className="ml-4 font-medium text-sm">Clear All Data</span>}</button>
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center"><Menu size={20}/></button>
             <button onClick={toggleTheme} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
         </div>
@@ -145,7 +126,6 @@ export default function FinSaveDashboard() {
 
       <main className="flex-1 p-8 overflow-y-auto">
         <h2 className="text-3xl font-extrabold mb-8 text-cyan-500">FinSave - {activePage}</h2>
-        
         <div className={`grid grid-cols-1 ${cards.length > 1 ? 'md:grid-cols-3' : 'md:grid-cols-1'} gap-6 mb-8`}>
             {cards.map((s, i) => (
                 <div key={i} className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
@@ -154,37 +134,19 @@ export default function FinSaveDashboard() {
                 </div>
             ))}
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
                 {activePage === 'DASHBOARD' && (
                     <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                         <h3 className="font-bold mb-6">Activity Overview</h3>
-                        <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={transactions.slice().reverse()}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#334155' : '#e2e8f0'} vertical={false} />
-                                <XAxis dataKey="date" stroke="#64748b" />
-                                <YAxis stroke="#64748b" />
-                                <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#334155', borderRadius: '8px' }} formatter={(v: any) => [`₹${Math.abs(Number(v)).toLocaleString('en-IN')}`, 'Amount']} />
-                                <Bar dataKey="amount" fill="#06b6d4" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <ResponsiveContainer width="100%" height={250}><BarChart data={transactions.slice().reverse()}><CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#334155' : '#e2e8f0'} vertical={false} /><XAxis dataKey="date" stroke="#64748b" /><YAxis stroke="#64748b" /><Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderColor: '#334155', borderRadius: '8px' }} formatter={(v: any) => [`₹${Math.abs(Number(v)).toLocaleString('en-IN')}`, 'Amount']} /><Bar dataKey="amount" fill="#06b6d4" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
                     </div>
                 )}
-                
                 <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                     <h3 className="font-bold mb-4">Transaction Records</h3>
-                    <div className="space-y-3">
-                        {filteredData.map(t => (
-                            <div key={t.id} className={`flex justify-between items-center py-3 border-b ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'}`}>
-                                <div><p className="font-bold">{t.desc}</p><p className="text-xs opacity-50">{t.date} • {t.category}</p></div>
-                                <span className={`font-bold text-lg ${t.amount > 0 ? 'text-emerald-500' : 'text-red-500'}`}>{t.amount > 0 ? '+' : ''}₹{Math.abs(t.amount).toLocaleString('en-IN')}</span>
-                            </div>
-                        ))}
-                    </div>
+                    <div className="space-y-3">{filteredData.map(t => (<div key={t.id} className={`flex justify-between items-center py-3 border-b ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'}`}><div><p className="font-bold">{t.desc}</p><p className="text-xs opacity-50">{t.date} • {t.category}</p></div><span className={`font-bold text-lg ${t.amount > 0 ? 'text-emerald-500' : 'text-red-500'}`}>{t.amount > 0 ? '+' : ''}₹{Math.abs(t.amount).toLocaleString('en-IN')}</span></div>))}</div>
                 </div>
             </div>
-
             <div className={`p-6 rounded-2xl border h-fit ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200 shadow-sm'}`}>
                 <h3 className="font-bold mb-6 flex items-center gap-2"><PlusCircle className="text-cyan-500"/> New Entry</h3>
                 <div className="space-y-4">
@@ -194,9 +156,7 @@ export default function FinSaveDashboard() {
                         <option value="Income">Income</option>
                         <option value="Expense">Expense</option>
                     </select>
-                    <select className={inputStyle} value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-                        {CATEGORIES[formData.type].map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                    <select className={inputStyle} value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>{CATEGORIES[formData.type].map(c => <option key={c} value={c}>{c}</option>)}</select>
                     <button onClick={addTransaction} className="w-full bg-cyan-500 text-white p-3 rounded-xl font-bold hover:bg-cyan-600 transition shadow-md">Save Transaction</button>
                 </div>
             </div>
