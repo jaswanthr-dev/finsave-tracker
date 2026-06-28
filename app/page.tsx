@@ -110,7 +110,7 @@ export default function FinSaveDashboard() {
             ))}
         </nav>
         <div className="px-3 space-y-4">
-            <button onClick={() => { localStorage.removeItem('finSaveData'); window.location.reload(); }} className="w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition">
+            <button onClick={() => { localStorage.removeItem('finSaveData'); window.location.reload(); }} className={`w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition ${!isSidebarOpen ? 'justify-center' : ''}`}>
                 <Trash2 size={20} />
                 {isSidebarOpen && <span className="ml-4 font-medium text-sm">Clear All Data</span>}
             </button>
