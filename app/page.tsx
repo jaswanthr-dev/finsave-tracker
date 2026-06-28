@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { LayoutDashboard, Wallet, TrendingUp, TrendingDown, History, PlusCircle, Menu, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Wallet, TrendingUp, TrendingDown, History, PlusCircle, Menu, Sun, Moon, Trash2 } from 'lucide-react';
 
 interface Transaction {
   id: number;
@@ -23,7 +23,6 @@ export default function FinSaveDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [activePage, setActivePage] = useState('DASHBOARD');
   
-  // Data state initialized as empty, then populated by localStorage
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [formData, setFormData] = useState({ 
@@ -34,7 +33,6 @@ export default function FinSaveDashboard() {
     category: 'Salary' 
   });
 
-  // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('finSaveData');
     if (saved) {
@@ -111,7 +109,11 @@ export default function FinSaveDashboard() {
                 </button>
             ))}
         </nav>
-        <div className="px-3 space-y-2">
+        <div className="px-3 space-y-4">
+            <button onClick={() => { localStorage.removeItem('finSaveData'); window.location.reload(); }} className="w-full flex items-center p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition">
+                <Trash2 size={20} />
+                {isSidebarOpen && <span className="ml-4 font-medium text-sm">Clear All Data</span>}
+            </button>
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center"><Menu size={20}/></button>
             <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full flex items-center p-3 hover:bg-slate-500/10 rounded-xl justify-center">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
         </div>
