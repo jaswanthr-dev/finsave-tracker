@@ -1,52 +1,42 @@
 # FinSave - Financial Intelligence Dashboard
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=vercel)](finsave-tracker.vercel.app)
+FinSave is a high-performance financial tracking application designed for real-time budget management, expense categorization, and data-driven insights.
 
-A professional, high-performance financial tracking application designed for data-driven personal budget management.
+[🚀 View Live Demo](https://finsave-tracker.vercel.app)
 
-## 📑 Table of Contents
-- [Project Overview](#project-overview)
-- [Key Features](#key-features)
-- [Engineering & Tech Stack](#engineering--tech-stack)
-- [System Architecture](#system-architecture)
-- [Getting Started](#getting-started)
+## 🚀 Quick Overview
+| Metric | Detail |
+| :--- | :--- |
+| **Project Name** | FinSave |
+| **Primary Goal** | Streamlined Financial Tracking |
+| **Tech Stack** | Next.js 15, Tailwind, Recharts |
+| **Status** | Active Development |
 
 ---
 
-## 🎯 Project Overview
-FinSave provides a clean, analytical dashboard for users to maintain total control over their finances. The application transforms raw transaction entries into actionable visual insights, helping users monitor balances, income, and expenses in real-time.
+## 🛠 Tech Stack
+* **Framework:** Next.js 15 (App Router for optimized performance)
+* **Visualization:** Recharts (Chosen for modularity and responsive SVG rendering)
+* **Styling:** Tailwind CSS (Utility-first approach for design consistency)
+* **Persistence:** Local Storage API (Client-side state management for zero-latency)
+* **Deployment:** Vercel (Optimized for CI/CD and edge caching)
 
-## ✨ Key Features
-* **Real-time Analytics**: Dynamic tracking of total balance, income, and expenses.
-* **Interactive Visualization**: Uses Recharts to generate responsive, data-driven bar graphs.
-* **Transaction Management**: Streamlined UI for rapid entry of financial data.
-* **Responsive Design**: Optimized for seamless performance across desktop, tablet, and mobile devices.
+## 🏗 Key Features
+* **Real-time Analytics:** Track balances, income, and expenses with instantaneous updates.
+* **Interactive Visualization:** Responsive bar graphs for data-driven insights.
+* **Client-Side Persistence:** Secure, zero-latency data access via local storage.
+* **Responsive Design:** Mobile-first architecture ensuring usability on all screen sizes.
 
-## 🛠 Engineering & Tech Stack
-* **Frontend**: Next.js 15+ (App Router)
-* **Data Visualization**: Recharts
-* **Styling**: Tailwind CSS
-* **Deployment**: Vercel (CI/CD)
-* **Language**: TypeScript/JavaScript
+## 🧠 Architectural Decisions
+* **Performance:** Leveraged the Next.js App Router to reduce initial load time and optimize rendering.
+* **Efficiency:** Used Recharts because it integrates seamlessly with React state, reducing the need for heavy, external data visualization libraries.
 
-## 🏗 System Architecture
-FinSave is built on a modular, component-based architecture:
-* **State Management**: Orchestrates real-time calculations based on user input.
-* **Grid System**: Utilizes CSS Grid/Flexbox for a fluid, adaptive UI layout.
-* **Client-Side Persistence**: Employs local storage logic to ensure data availability without backend latency.
+## 🛣 Future Roadmap
+- [ ] Implement Authentication (NextAuth.js) for user-specific data.
+- [ ] Add CSV export functionality for financial reporting.
+- [ ] Integration with Plaid/Stripe APIs for automated bank syncing.
 
 ## ⚡ Getting Started
-Follow these steps to set up the development environment locally:
-
-```bash
-# Clone the repository
-git clone [https://github.com/jaswanthr-dev/finsave-tracker.git](https://github.com/jaswanthr-dev/finsave-tracker.git)
-
-# Navigate to the project directory
-cd finsave-tracker
-
-# Install dependencies
-npm install
-
-# Run the development environment
-npm run dev
+1. **Clone the repo:**
+   ```bash
+   git clone [https://github.com/jaswanthr-dev/finsave-tracker.git](https://github.com/jaswanthr-dev/finsave-tracker.git)
